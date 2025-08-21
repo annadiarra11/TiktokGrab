@@ -49,6 +49,7 @@ export default function Home() {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [videoData, setVideoData] = useState<any>(null);
+  const [showDelayedOptions, setShowDelayedOptions] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation(currentLanguage);
 
@@ -84,10 +85,14 @@ export default function Home() {
       if (data.success) {
         setVideoData({
           ...data,
-          thumbnail: 'https://via.placeholder.com/300x200?text=TikTok+Video',
-          title: 'TikTok Video'
+          thumbnail: data.thumbnail || 'https://via.placeholder.com/300x200?text=TikTok+Video',
+          title: data.title || 'TikTok Video'
         });
         setShowDownloadOptions(true);
+        // Add 2-second delay before showing the second download options
+        setTimeout(() => {
+          setShowDelayedOptions(true);
+        }, 2000);
       } else {
         throw new Error(data.error || t('downloadError'));
       }
@@ -120,25 +125,54 @@ export default function Home() {
     }
   };
 
-  const handleDownload = (type: 'video' | 'audio') => {
-    // Create download link
-    const link = document.createElement('a');
-    link.href = `#download-${type}`;
-    link.download = `tiktok-${type}`;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast({
-      title: t('successTitle'),
-      description: `${type === 'video' ? 'Video' : 'Audio'} download started`,
-    });
+  const handleDownload = async (type: 'video' | 'audio') => {
+    try {
+      if (!videoData || !videoData.requestId) {
+        toast({
+          title: t('errorTitle'),
+          description: 'No video data available',
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Get the actual download URL from the server
+      const response = await fetch(`/api/download/${videoData.requestId}/${type}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        
+        // Create download link with actual file
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `tiktok-${type}-${Date.now()}.${type === 'video' ? 'mp4' : 'mp3'}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the blob URL
+        window.URL.revokeObjectURL(downloadUrl);
+        
+        toast({
+          title: t('successTitle'),
+          description: `${type === 'video' ? 'Video' : 'Audio'} download started`,
+        });
+      } else {
+        throw new Error(`Download failed: ${response.status}`);
+      }
+    } catch (error) {
+      toast({
+        title: t('errorTitle'),
+        description: `Failed to download ${type}. Please try again.`,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDownloadOtherVideos = () => {
     setShowDownloadOptions(false);
+    setShowDelayedOptions(false);
     setVideoData(null);
     form.reset();
     // Redirect to home page
@@ -269,38 +303,77 @@ export default function Home() {
                 ) : (
                   <div className="text-center">
                     <div className="flex flex-col md:flex-row items-center gap-6">
-                      <div className="w-48 h-32 bg-gradient-to-br from-coffee to-dark-secondary rounded-lg flex items-center justify-center">
-                        <Play className="w-12 h-12 text-accent-orange" />
+                      {/* Video Thumbnail */}
+                      <div className="w-48 h-32 bg-gradient-to-br from-coffee to-dark-secondary rounded-lg overflow-hidden">
+                        {videoData?.thumbnail && videoData.thumbnail !== 'https://via.placeholder.com/300x200?text=TikTok+Video' ? (
+                          <img 
+                            src={videoData.thumbnail} 
+                            alt="TikTok Video Thumbnail" 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback to play icon if thumbnail fails to load
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="w-12 h-12 text-accent-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="9,18 15,12 9,6"></polygon></svg></div>';
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Play className="w-12 h-12 text-accent-orange" />
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1 text-center md:text-left">
                         <h3 className="text-xl font-semibold text-cream mb-4">
                           {videoData?.title || 'TikTok Video Ready'}
                         </h3>
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-                          <Button 
-                            onClick={() => handleDownload('video')}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
-                            data-testid="button-download-video-final"
-                          >
-                            <Download className="mr-2 h-4 w-4" />
-                            {t('downloadVideo')}
-                          </Button>
-                          <Button 
-                            onClick={() => handleDownload('audio')}
-                            className="bg-dark-secondary hover:bg-coffee text-cream px-6 py-3 rounded-lg font-semibold border border-cream/20"
-                            data-testid="button-download-audio-final"
-                          >
-                            <Download className="mr-2 h-4 w-4" />
-                            {t('downloadAudio')}
-                          </Button>
-                          <Button 
-                            onClick={() => handleDownloadOtherVideos()}
-                            className="bg-dark-secondary hover:bg-coffee text-cream px-6 py-3 rounded-lg font-semibold border border-cream/20"
-                            data-testid="button-download-other-videos"
-                          >
-                            {t('downloadOtherVideos')}
-                          </Button>
-                        </div>
+                        {/* Show first download button immediately */}
+                        {!showDelayedOptions ? (
+                          <div className="flex justify-center md:justify-start">
+                            <Button 
+                              onClick={() => {
+                                toast({
+                                  title: 'Please wait...',
+                                  description: 'Download options will appear in a moment',
+                                });
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold animate-pulse"
+                              disabled
+                            >
+                              <Download className="mr-2 h-4 w-4" />
+                              {t('downloadVideo')}
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                            <Button 
+                              onClick={() => handleDownload('video')}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
+                              data-testid="button-download-video-final"
+                            >
+                              <Download className="mr-2 h-4 w-4" />
+                              {t('downloadVideo')}
+                            </Button>
+                            <Button 
+                              onClick={() => handleDownload('audio')}
+                              className="bg-dark-secondary hover:bg-coffee text-cream px-6 py-3 rounded-lg font-semibold border border-cream/20"
+                              data-testid="button-download-audio-final"
+                            >
+                              <Download className="mr-2 h-4 w-4" />
+                              {t('downloadAudio')}
+                            </Button>
+                            <Button 
+                              onClick={() => handleDownloadOtherVideos()}
+                              className="bg-dark-secondary hover:bg-coffee text-cream px-6 py-3 rounded-lg font-semibold border border-cream/20"
+                              data-testid="button-download-other-videos"
+                            >
+                              {t('downloadOtherVideos')}
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

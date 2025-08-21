@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { downloadRequestSchema } from "@shared/schema";
 import { z } from "zod";
+import fs from 'fs';
+import path from 'path';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // TikTok video download endpoint
@@ -20,12 +22,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Simulate download processing delay
       setTimeout(async () => {
         try {
-          // In a real implementation, you would:
-          // 1. Extract video metadata from TikTok URL
-          // 2. Download the video file
-          // 3. Remove watermarks if needed
-          // 4. Store the processed video file
-          // 5. Generate a download URL
+          // For demo purposes, we'll simulate TikTok metadata extraction
+          // In a real implementation, you would use TikTok API or web scraping
+          const videoId = url.split('/').pop()?.split('?')[0] || Date.now().toString();
+          const mockThumbnail = `https://picsum.photos/300/200?random=${Math.floor(Math.random() * 1000)}`;
+          const mockTitle = `TikTok Video ${videoId.slice(-6)}`;
           
           const fileName = `tiktok-video-${Date.now()}.mp4`;
           const downloadUrl = `/api/download/${downloadRequest.id}/file`;
@@ -39,6 +40,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               originalUrl: url,
               quality,
               processedAt: new Date().toISOString(),
+              thumbnail: mockThumbnail,
+              title: mockTitle,
             },
           });
         } catch (error) {
@@ -49,13 +52,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }, 3000); // Simulate 3 second processing time
       
-      // Return success response with request ID and immediate processing simulation
+      // Generate mock metadata for immediate response
+      const videoId = url.split('/').pop()?.split('?')[0] || Date.now().toString();
+      const mockThumbnail = `https://picsum.photos/300/200?random=${Math.floor(Math.random() * 1000)}`;
+      const mockTitle = `TikTok Video ${videoId.slice(-6)}`;
+      
+      // Return success response with request ID and video metadata
       res.json({
         success: true,
         requestId: downloadRequest.id,
         message: "Video processing started",
-        // For demo purposes, return downloadUrl immediately with a simulated file
-        downloadUrl: `https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4`,
+        thumbnail: mockThumbnail,
+        title: mockTitle,
         filename: `tiktok-video-${quality}-${Date.now()}.mp4`,
       });
       
@@ -106,27 +114,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Download file endpoint (placeholder)
-  app.get("/api/download/:id/file", async (req, res) => {
+  // Download video file endpoint
+  app.get("/api/download/:id/video", async (req, res) => {
     try {
       const { id } = req.params;
       const downloadRequest = await storage.getDownloadRequest(id);
       
-      if (!downloadRequest || downloadRequest.status !== "completed") {
+      if (!downloadRequest) {
         res.status(404).json({
           success: false,
-          message: "File not found or not ready",
+          message: "Download request not found",
         });
         return;
       }
       
-      // In a real implementation, you would serve the actual video file
-      // For now, we'll redirect to a placeholder or return an error
-      res.status(501).json({
+      // For demo purposes, serve a sample video file
+      // In production, you would serve the actual processed TikTok video
+      const sampleVideoPath = path.join(process.cwd(), 'sample-files', 'sample-video.mp4');
+      
+      // Create sample-files directory if it doesn't exist
+      const sampleFilesDir = path.join(process.cwd(), 'sample-files');
+      if (!fs.existsSync(sampleFilesDir)) {
+        fs.mkdirSync(sampleFilesDir, { recursive: true });
+      }
+      
+      // Create a small sample MP4 file if it doesn't exist
+      if (!fs.existsSync(sampleVideoPath)) {
+        // Create a minimal MP4 file (this is just a placeholder)
+        const sampleContent = Buffer.from('SAMPLE_MP4_CONTENT_PLACEHOLDER');
+        fs.writeFileSync(sampleVideoPath, sampleContent);
+      }
+      
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Content-Disposition', `attachment; filename="tiktok-video-${Date.now()}.mp4"`);
+      
+      // Stream the file
+      const fileStream = fs.createReadStream(sampleVideoPath);
+      fileStream.pipe(res);
+      
+    } catch (error) {
+      res.status(500).json({
         success: false,
-        message: "File download not implemented in demo",
-        fileName: downloadRequest.fileName,
+        message: "Internal server error",
       });
+    }
+  });
+  
+  // Download audio file endpoint
+  app.get("/api/download/:id/audio", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const downloadRequest = await storage.getDownloadRequest(id);
+      
+      if (!downloadRequest) {
+        res.status(404).json({
+          success: false,
+          message: "Download request not found",
+        });
+        return;
+      }
+      
+      // For demo purposes, serve a sample audio file
+      // In production, you would extract and serve the actual audio from TikTok video
+      const sampleAudioPath = path.join(process.cwd(), 'sample-files', 'sample-audio.mp3');
+      
+      // Create sample-files directory if it doesn't exist
+      const sampleFilesDir = path.join(process.cwd(), 'sample-files');
+      if (!fs.existsSync(sampleFilesDir)) {
+        fs.mkdirSync(sampleFilesDir, { recursive: true });
+      }
+      
+      // Create a small sample MP3 file if it doesn't exist
+      if (!fs.existsSync(sampleAudioPath)) {
+        // Create a minimal MP3 file (this is just a placeholder)
+        const sampleContent = Buffer.from('SAMPLE_MP3_CONTENT_PLACEHOLDER');
+        fs.writeFileSync(sampleAudioPath, sampleContent);
+      }
+      
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Content-Disposition', `attachment; filename="tiktok-audio-${Date.now()}.mp3"`);
+      
+      // Stream the file
+      const fileStream = fs.createReadStream(sampleAudioPath);
+      fileStream.pipe(res);
       
     } catch (error) {
       res.status(500).json({
