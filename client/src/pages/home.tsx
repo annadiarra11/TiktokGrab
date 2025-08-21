@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -24,20 +24,43 @@ import {
   ChevronDown
 } from "lucide-react";
 import { FAQItem } from "@/components/ui/faq-item";
+import { LanguageSelector } from "@/components/ui/language-selector";
+import { useTranslation, type Language } from "@/lib/translations";
 
-const downloadSchema = z.object({
-  url: z.string().url("Please enter a valid TikTok URL").refine(
+const createDownloadSchema = (t: any) => z.object({
+  url: z.string().url(t('invalidUrl')).refine(
     (url) => url.includes("tiktok.com"),
-    "URL must be from TikTok"
+    t('urlMustBeTiktok')
   ),
   quality: z.enum(["hd", "sd", "audio"]).default("hd"),
 });
 
-type DownloadForm = z.infer<typeof downloadSchema>;
+type DownloadForm = {
+  url: string;
+  quality: "hd" | "sd" | "audio";
+};
 
 export default function Home() {
   const [downloadProgress, setDownloadProgress] = useState(0);
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   const { toast } = useToast();
+  const { t } = useTranslation(currentLanguage);
+
+  // Load language from localStorage on component mount
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('selectedLanguage') as Language;
+    if (savedLanguage && ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ja', 'ko', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Save language to localStorage when it changes
+  const handleLanguageChange = (language: Language) => {
+    setCurrentLanguage(language);
+    localStorage.setItem('selectedLanguage', language);
+  };
+
+  const downloadSchema = createDownloadSchema(t);
 
   const form = useForm<DownloadForm>({
     resolver: zodResolver(downloadSchema),
@@ -58,20 +81,22 @@ export default function Home() {
         const link = document.createElement('a');
         link.href = data.downloadUrl;
         link.download = data.filename || 'tiktok-video';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
         toast({
-          title: "Success!",
-          description: "Video downloaded successfully",
+          title: t('successTitle'),
+          description: t('successDesc'),
         });
       }
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to download video",
+        title: t('errorTitle'),
+        description: error.message || t('downloadError'),
         variant: "destructive",
       });
     },
@@ -89,8 +114,8 @@ export default function Home() {
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to read from clipboard",
+        title: t('errorTitle'),
+        description: t('clipboardError'),
         variant: "destructive",
       });
     }
@@ -104,18 +129,24 @@ export default function Home() {
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Video className="text-accent-orange text-2xl" />
-              <span className="text-2xl font-bold text-cream">TikDownloader</span>
+              <span className="text-2xl font-bold text-cream">{t('brand')}</span>
             </div>
-            <div className="hidden md:flex items-center space-x-6">
-              <a href="#features" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
-                Features
-              </a>
-              <a href="#faq" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
-                FAQ
-              </a>
-              <a href="#contact" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
-                Contact
-              </a>
+            <div className="flex items-center space-x-6">
+              <div className="hidden md:flex items-center space-x-6">
+                <a href="#features" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
+                  {t('features')}
+                </a>
+                <a href="#faq" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
+                  {t('faq')}
+                </a>
+                <a href="#contact" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
+                  {t('contact')}
+                </a>
+              </div>
+              <LanguageSelector 
+                currentLanguage={currentLanguage} 
+                onLanguageChange={handleLanguageChange} 
+              />
             </div>
           </nav>
         </div>
@@ -126,10 +157,10 @@ export default function Home() {
         <section className="py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 text-gradient">
-              Download TikTok Videos
+              {t('title')}
             </h1>
             <p className="text-xl md:text-2xl text-cream-dark mb-12 max-w-3xl mx-auto">
-              Save your favorite TikTok videos in HD quality without watermarks. Fast, free, and reliable.
+              {t('subtitle')}
             </p>
 
             {/* Download Form */}
@@ -146,7 +177,7 @@ export default function Home() {
                             <FormControl>
                               <Input
                                 {...field}
-                                placeholder="Paste TikTok video URL here..."
+                                placeholder={t('urlPlaceholder')}
                                 className="input-gradient w-full px-6 py-4 h-auto rounded-xl text-cream placeholder-cream-dark bg-transparent border-0 focus:ring-2 focus:ring-accent-orange transition-all duration-300"
                                 data-testid="input-tiktok-url"
                               />
@@ -180,15 +211,15 @@ export default function Home() {
                             >
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="hd" id="hd" className="text-accent-orange border-cream-dark" data-testid="radio-quality-hd" />
-                                <Label htmlFor="hd" className="text-cream-dark cursor-pointer">HD Quality</Label>
+                                <Label htmlFor="hd" className="text-cream-dark cursor-pointer">{t('hdQuality')}</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="sd" id="sd" className="text-accent-orange border-cream-dark" data-testid="radio-quality-sd" />
-                                <Label htmlFor="sd" className="text-cream-dark cursor-pointer">Standard Quality</Label>
+                                <Label htmlFor="sd" className="text-cream-dark cursor-pointer">{t('standardQuality')}</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="audio" id="audio" className="text-accent-orange border-cream-dark" data-testid="radio-quality-audio" />
-                                <Label htmlFor="audio" className="text-cream-dark cursor-pointer">Audio Only</Label>
+                                <Label htmlFor="audio" className="text-cream-dark cursor-pointer">{t('audioOnly')}</Label>
                               </div>
                             </RadioGroup>
                           </FormControl>
@@ -207,7 +238,7 @@ export default function Home() {
                       ) : (
                         <Download className="mr-2 h-5 w-5" />
                       )}
-                      {downloadMutation.isPending ? "Processing..." : "Download Video"}
+                      {downloadMutation.isPending ? t('processing') : t('downloadButton')}
                     </Button>
                   </form>
                 </Form>
@@ -217,7 +248,7 @@ export default function Home() {
                   <div className="mt-6 text-center animate-pulse-slow">
                     <div className="text-accent-orange mb-2">
                       <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                      <p className="text-cream-dark">Processing your video...</p>
+                      <p className="text-cream-dark">{t('processingVideo')}</p>
                     </div>
                   </div>
                 )}
@@ -227,7 +258,7 @@ export default function Home() {
                   <div className="mt-6">
                     <Progress value={downloadProgress} className="h-2 bg-coffee" />
                     <p className="text-center text-cream-dark mt-2">
-                      Downloading... {downloadProgress}%
+                      {t('downloadProgress')} {downloadProgress}%
                     </p>
                   </div>
                 )}
@@ -239,22 +270,22 @@ export default function Home() {
               <Card className="card-gradient rounded-xl p-6 text-center animate-slide-up border-0">
                 <CardContent className="p-0">
                   <Zap className="text-accent-orange text-4xl mb-4 mx-auto" />
-                  <h3 className="text-xl font-semibold mb-2 text-cream">Lightning Fast</h3>
-                  <p className="text-cream-dark">Download videos in seconds with our optimized servers</p>
+                  <h3 className="text-xl font-semibold mb-2 text-cream">{t('lightningFast')}</h3>
+                  <p className="text-cream-dark">{t('lightningFastDesc')}</p>
                 </CardContent>
               </Card>
               <Card className="card-gradient rounded-xl p-6 text-center animate-slide-up border-0">
                 <CardContent className="p-0">
                   <Shield className="text-accent-orange text-4xl mb-4 mx-auto" />
-                  <h3 className="text-xl font-semibold mb-2 text-cream">No Watermarks</h3>
-                  <p className="text-cream-dark">Get clean videos without any watermarks or logos</p>
+                  <h3 className="text-xl font-semibold mb-2 text-cream">{t('noWatermarks')}</h3>
+                  <p className="text-cream-dark">{t('noWatermarksDesc')}</p>
                 </CardContent>
               </Card>
               <Card className="card-gradient rounded-xl p-6 text-center animate-slide-up border-0">
                 <CardContent className="p-0">
                   <Smartphone className="text-accent-orange text-4xl mb-4 mx-auto" />
-                  <h3 className="text-xl font-semibold mb-2 text-cream">All Devices</h3>
-                  <p className="text-cream-dark">Works perfectly on desktop, tablet, and mobile</p>
+                  <h3 className="text-xl font-semibold mb-2 text-cream">{t('allDevices')}</h3>
+                  <p className="text-cream-dark">{t('allDevicesDesc')}</p>
                 </CardContent>
               </Card>
             </div>
@@ -262,8 +293,8 @@ export default function Home() {
             {/* App Download */}
             <Card className="card-gradient rounded-xl p-8 mb-20 border-0">
               <CardContent className="p-0">
-                <h3 className="text-2xl font-bold mb-4 text-cream">Download Our Mobile App</h3>
-                <p className="text-cream-dark mb-6">Get the mobile app for faster downloads and offline access</p>
+                <h3 className="text-2xl font-bold mb-4 text-cream">{t('mobileAppTitle')}</h3>
+                <p className="text-cream-dark mb-6">{t('mobileAppDesc')}</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button 
                     variant="outline"
@@ -272,8 +303,8 @@ export default function Home() {
                   >
                     <Play className="mr-3 text-green-400" />
                     <div className="text-left">
-                      <div className="text-xs text-gray-400">Get it on</div>
-                      <div className="text-sm font-semibold">Google Play</div>
+                      <div className="text-xs text-gray-400">{t('getItOn')}</div>
+                      <div className="text-sm font-semibold">{t('googlePlay')}</div>
                     </div>
                   </Button>
                   <Button 
@@ -283,8 +314,8 @@ export default function Home() {
                   >
                     <div className="mr-3 text-white font-bold">🍎</div>
                     <div className="text-left">
-                      <div className="text-xs text-gray-400">Download on the</div>
-                      <div className="text-sm font-semibold">App Store</div>
+                      <div className="text-xs text-gray-400">{t('downloadOn')}</div>
+                      <div className="text-sm font-semibold">{t('appStore')}</div>
                     </div>
                   </Button>
                 </div>
@@ -297,32 +328,32 @@ export default function Home() {
       {/* FAQ Section */}
       <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-dark-secondary">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-12 text-cream">Frequently Asked Questions</h2>
+          <h2 className="text-4xl font-bold text-center mb-12 text-cream">{t('faqTitle')}</h2>
           
           <div className="space-y-4">
             <FAQItem
-              question="How to download TikTok videos without watermark?"
-              answer="Simply paste the TikTok video URL into our input field, select your preferred quality, and click download. Our system automatically removes watermarks from the downloaded video."
+              question={t('faqQ1')}
+              answer={t('faqA1')}
             />
             <FAQItem
-              question="Is it legal to download TikTok videos?"
-              answer="You should only download videos for personal use and respect copyright laws. Always ensure you have permission from the content creator before downloading their videos."
+              question={t('faqQ2')}
+              answer={t('faqA2')}
             />
             <FAQItem
-              question="What video qualities are supported?"
-              answer="We support HD quality (1080p), Standard quality (720p), and audio-only downloads. The available quality depends on the original video uploaded to TikTok."
+              question={t('faqQ3')}
+              answer={t('faqA3')}
             />
             <FAQItem
-              question="Do I need to install any software?"
-              answer="No installation required! Our web-based downloader works directly in your browser. However, we also offer mobile apps for enhanced convenience."
+              question={t('faqQ4')}
+              answer={t('faqA4')}
             />
             <FAQItem
-              question="Is there a limit to how many videos I can download?"
-              answer="Our service is completely free with no download limits. You can download as many TikTok videos as you want, whenever you want."
+              question={t('faqQ5')}
+              answer={t('faqA5')}
             />
             <FAQItem
-              question="Can I download TikTok videos on my iPhone/Android?"
-              answer="Yes! Our website is fully responsive and works on all mobile devices. You can also download our dedicated mobile apps for an even better experience."
+              question={t('faqQ6')}
+              answer={t('faqA6')}
             />
           </div>
         </div>
@@ -335,23 +366,23 @@ export default function Home() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Video className="text-accent-orange text-xl" />
-                <span className="text-xl font-bold text-cream">TikDownloader</span>
+                <span className="text-xl font-bold text-cream">{t('brand')}</span>
               </div>
-              <p className="text-cream-dark">Fast, reliable, and free TikTok video downloader. Save your favorite videos in HD quality.</p>
+              <p className="text-cream-dark">{t('footerDesc')}</p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4 text-cream">Company</h4>
+              <h4 className="font-semibold mb-4 text-cream">{t('company')}</h4>
               <ul className="space-y-2 text-cream-dark">
                 <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">About Us</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Contact</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Terms of Service</a></li>
+                <li><a href="#contact" className="hover:text-accent-orange transition-colors duration-300">{t('contact')}</a></li>
+                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">{t('privacyPolicy')}</a></li>
+                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">{t('termsOfService')}</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4 text-cream">Tools</h4>
+              <h4 className="font-semibold mb-4 text-cream">{t('tools')}</h4>
               <ul className="space-y-2 text-cream-dark">
                 <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">TikTok Video Downloader</a></li>
                 <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Instagram Downloader</a></li>
@@ -361,18 +392,18 @@ export default function Home() {
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4 text-cream">Support</h4>
+              <h4 className="font-semibold mb-4 text-cream">{t('legal')}</h4>
               <ul className="space-y-2 text-cream-dark">
-                <li><a href="#faq" className="hover:text-accent-orange transition-colors duration-300">FAQ</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Help Center</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Report Bug</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Feature Request</a></li>
+                <li><a href="#faq" className="hover:text-accent-orange transition-colors duration-300">{t('faq')}</a></li>
+                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">{t('termsOfService')}</a></li>
+                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">{t('privacyPolicy')}</a></li>
+                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">{t('dmca')}</a></li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-coffee mt-12 pt-8 text-center text-cream-dark">
-            <p>&copy; 2024 TikDownloader. All rights reserved. | Not affiliated with TikTok or ByteDance Ltd.</p>
+            <p>&copy; 2024 {t('brand')}. All rights reserved. | Not affiliated with TikTok or ByteDance Ltd.</p>
           </div>
         </div>
       </footer>

@@ -48,11 +48,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }, 3000); // Simulate 3 second processing time
       
-      // Return success response with request ID
+      // Return success response with request ID and immediate processing simulation
       res.json({
         success: true,
         requestId: downloadRequest.id,
         message: "Video processing started",
+        // For demo purposes, return downloadUrl immediately with a simulated file
+        downloadUrl: `https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4`,
+        filename: `tiktok-video-${quality}-${Date.now()}.mp4`,
       });
       
     } catch (error) {
