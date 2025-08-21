@@ -323,6 +323,140 @@ export default function Home() {
             </Card>
           </div>
         </section>
+
+        {/* SEO Content Section */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gradient">
+                {t('seoTitle')}
+              </h2>
+              <p className="text-xl text-cream-dark max-w-4xl mx-auto">
+                {t('seoSubtitle')}
+              </p>
+            </div>
+
+            {/* Why Choose Us */}
+            <div className="mb-16">
+              <h3 className="text-3xl font-bold text-center mb-12 text-cream">
+                {t('whyChooseUs')}
+              </h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <Card className="card-gradient rounded-xl p-6 border-0">
+                  <CardContent className="p-0">
+                    <Download className="text-accent-orange text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('unlimitedDownloads')}</h4>
+                    <p className="text-cream-dark text-sm">{t('unlimitedDownloadsDesc')}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="card-gradient rounded-xl p-6 border-0">
+                  <CardContent className="p-0">
+                    <Video className="text-accent-orange text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('allFormatsSupported')}</h4>
+                    <p className="text-cream-dark text-sm">{t('allFormatsSupportedDesc')}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="card-gradient rounded-xl p-6 border-0">
+                  <CardContent className="p-0">
+                    <Zap className="text-accent-orange text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('fastProcessing')}</h4>
+                    <p className="text-cream-dark text-sm">{t('fastProcessingDesc')}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="card-gradient rounded-xl p-6 border-0">
+                  <CardContent className="p-0">
+                    <Shield className="text-accent-orange text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('privacySecure')}</h4>
+                    <p className="text-cream-dark text-sm">{t('privacySecureDesc')}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="card-gradient rounded-xl p-6 border-0">
+                  <CardContent className="p-0">
+                    <Smartphone className="text-accent-orange text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('crossPlatformCompatibility')}</h4>
+                    <p className="text-cream-dark text-sm">{t('crossPlatformCompatibilityDesc')}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="card-gradient rounded-xl p-6 border-0">
+                  <CardContent className="p-0">
+                    <Loader2 className="text-accent-orange text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('noSoftwareRequired')}</h4>
+                    <p className="text-cream-dark text-sm">{t('noSoftwareRequiredDesc')}</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* How It Works */}
+            <div className="mb-16">
+              <h3 className="text-3xl font-bold text-center mb-6 text-cream">
+                {t('howItWorks')}
+              </h3>
+              <p className="text-center text-cream-dark mb-12 max-w-3xl mx-auto">
+                {t('howItWorksDesc')}
+              </p>
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-accent-orange to-yellow-500 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-white font-bold text-lg">1</span>
+                  </div>
+                  <h4 className="text-lg font-semibold mb-3 text-cream">{t('step1Title')}</h4>
+                  <p className="text-cream-dark">{t('step1Desc')}</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-accent-orange to-yellow-500 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-white font-bold text-lg">2</span>
+                  </div>
+                  <h4 className="text-lg font-semibold mb-3 text-cream">{t('step2Title')}</h4>
+                  <p className="text-cream-dark">{t('step2Desc')}</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-accent-orange to-yellow-500 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-white font-bold text-lg">3</span>
+                  </div>
+                  <h4 className="text-lg font-semibold mb-3 text-cream">{t('step3Title')}</h4>
+                  <p className="text-cream-dark">{t('step3Desc')}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Advanced Features */}
+            <div className="text-center">
+              <h3 className="text-2xl font-bold mb-8 text-cream">
+                {t('advancedFeatures')}
+              </h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                <Card className="card-gradient rounded-xl p-6 border-0">
+                  <CardContent className="p-0 text-center">
+                    <h4 className="text-lg font-semibold mb-2 text-cream">{t('batchDownload')}</h4>
+                    <p className="text-cream-dark text-sm">{t('batchDownloadDesc')}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="card-gradient rounded-xl p-6 border-0">
+                  <CardContent className="p-0 text-center">
+                    <h4 className="text-lg font-semibold mb-2 text-cream">{t('audioExtraction')}</h4>
+                    <p className="text-cream-dark text-sm">{t('audioExtractionDesc')}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="card-gradient rounded-xl p-6 border-0">
+                  <CardContent className="p-0 text-center">
+                    <h4 className="text-lg font-semibold mb-2 text-cream">{t('thumbnailDownload')}</h4>
+                    <p className="text-cream-dark text-sm">{t('thumbnailDownloadDesc')}</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* FAQ Section */}

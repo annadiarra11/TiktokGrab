@@ -49,6 +49,49 @@ export const translations = {
     getItOn: 'Get it on',
     downloadOn: 'Download on the',
     
+    // SEO Content Section
+    seoTitle: 'TikTok Video Downloader - Free Online Tool',
+    seoSubtitle: 'Professional TikTok Video Download Service',
+    whyChooseUs: 'Why Choose Our TikTok Downloader?',
+    
+    // Main features for SEO
+    unlimitedDownloads: 'Unlimited Free Downloads',
+    unlimitedDownloadsDesc: 'Download as many TikTok videos as you want without any restrictions. Our free service has no daily limits or premium subscriptions required.',
+    
+    allFormatsSupported: 'All Video Formats Supported',
+    allFormatsSupportedDesc: 'Download TikTok videos in MP4, save TikTok audio as MP3, and get content in HD, Full HD (1080p), or standard quality based on the original upload.',
+    
+    noSoftwareRequired: 'No Software Installation Required',
+    noSoftwareRequiredDesc: 'Our web-based TikTok downloader works directly in your browser. No need to download apps or install extensions on your device.',
+    
+    crossPlatformCompatibility: 'Works on All Devices',
+    crossPlatformCompatibilityDesc: 'Compatible with Windows, Mac, Linux, Android, and iOS. Download TikTok videos on desktop, tablet, or mobile phone with ease.',
+    
+    fastProcessing: 'Lightning Fast Processing',
+    fastProcessingDesc: 'Our optimized servers process and convert TikTok videos in seconds. Experience the fastest TikTok video download service available online.',
+    
+    privacySecure: 'Privacy & Security First',
+    privacySecureDesc: 'We dont store your downloaded videos or personal information. All TikTok video downloads are processed securely and deleted automatically.',
+    
+    // How it works section
+    howItWorks: 'How to Download TikTok Videos',
+    howItWorksDesc: 'Follow these simple steps to download any TikTok video without watermark:',
+    step1Title: 'Copy TikTok Video URL',
+    step1Desc: 'Open TikTok app or website, find the video you want to download, and copy its link.',
+    step2Title: 'Paste URL in Our Downloader',
+    step2Desc: 'Paste the TikTok video URL into our download input field above.',
+    step3Title: 'Choose Quality & Download',
+    step3Desc: 'Select your preferred video quality (HD, SD, or Audio only) and click download.',
+    
+    // Advanced features
+    advancedFeatures: 'Advanced TikTok Download Features',
+    batchDownload: 'Bulk Download Support',
+    batchDownloadDesc: 'Download multiple TikTok videos at once by pasting multiple URLs.',
+    audioExtraction: 'Audio Extraction',
+    audioExtractionDesc: 'Extract high-quality audio from TikTok videos and save as MP3 files.',
+    thumbnailDownload: 'Thumbnail Download',
+    thumbnailDownloadDesc: 'Download TikTok video thumbnails and preview images in high resolution.',
+    
     // FAQ
     faqTitle: 'Frequently Asked Questions',
     faqQ1: 'How to download TikTok videos without watermark?',
@@ -123,6 +166,49 @@ export const translations = {
     getItOn: 'Disponible en',
     downloadOn: 'Descargar en',
     
+    // SEO Content Section
+    seoTitle: 'Descargador de Videos TikTok - Herramienta Online Gratuita',
+    seoSubtitle: 'Servicio Profesional de Descarga de Videos TikTok',
+    whyChooseUs: '¿Por Qué Elegir Nuestro Descargador TikTok?',
+    
+    // Main features for SEO
+    unlimitedDownloads: 'Descargas Gratuitas Ilimitadas',
+    unlimitedDownloadsDesc: 'Descarga tantos videos de TikTok como quieras sin restricciones. Nuestro servicio gratuito no tiene límites diarios ni suscripciones premium requeridas.',
+    
+    allFormatsSupported: 'Todos los Formatos de Video Compatibles',
+    allFormatsSupportedDesc: 'Descarga videos TikTok en MP4, guarda audio TikTok como MP3, y obtén contenido en HD, Full HD (1080p), o calidad estándar basado en la subida original.',
+    
+    noSoftwareRequired: 'No Requiere Instalación de Software',
+    noSoftwareRequiredDesc: 'Nuestro descargador TikTok basado en web funciona directamente en tu navegador. No necesitas descargar apps o instalar extensiones en tu dispositivo.',
+    
+    crossPlatformCompatibility: 'Funciona en Todos los Dispositivos',
+    crossPlatformCompatibilityDesc: 'Compatible con Windows, Mac, Linux, Android, e iOS. Descarga videos TikTok en escritorio, tablet, o teléfono móvil con facilidad.',
+    
+    fastProcessing: 'Procesamiento Súper Rápido',
+    fastProcessingDesc: 'Nuestros servidores optimizados procesan y convierten videos TikTok en segundos. Experimenta el servicio de descarga TikTok más rápido disponible online.',
+    
+    privacySecure: 'Privacidad y Seguridad Primero',
+    privacySecureDesc: 'No almacenamos tus videos descargados o información personal. Todas las descargas TikTok se procesan de forma segura y se eliminan automáticamente.',
+    
+    // How it works section
+    howItWorks: 'Cómo Descargar Videos TikTok',
+    howItWorksDesc: 'Sigue estos simples pasos para descargar cualquier video TikTok sin marca de agua:',
+    step1Title: 'Copia la URL del Video TikTok',
+    step1Desc: 'Abre la app o sitio web TikTok, encuentra el video que quieres descargar, y copia su enlace.',
+    step2Title: 'Pega la URL en Nuestro Descargador',
+    step2Desc: 'Pega la URL del video TikTok en nuestro campo de descarga arriba.',
+    step3Title: 'Elige Calidad y Descarga',
+    step3Desc: 'Selecciona tu calidad preferida (HD, SD, o Solo Audio) y haz clic en descargar.',
+    
+    // Advanced features
+    advancedFeatures: 'Características Avanzadas de Descarga TikTok',
+    batchDownload: 'Soporte de Descarga Masiva',
+    batchDownloadDesc: 'Descarga múltiples videos TikTok a la vez pegando múltiples URLs.',
+    audioExtraction: 'Extracción de Audio',
+    audioExtractionDesc: 'Extrae audio de alta calidad de videos TikTok y guarda como archivos MP3.',
+    thumbnailDownload: 'Descarga de Miniaturas',
+    thumbnailDownloadDesc: 'Descarga miniaturas de videos TikTok e imágenes de vista previa en alta resolución.',
+    
     // FAQ
     faqTitle: 'Preguntas Frecuentes',
     faqQ1: '¿Cómo descargar videos de TikTok sin marca de agua?',
@@ -196,6 +282,38 @@ export const translations = {
     appStore: 'App Store',
     getItOn: 'Disponible sur',
     downloadOn: 'Télécharger sur',
+    
+    // SEO Content Section
+    seoTitle: 'Téléchargeur de Vidéos TikTok - Outil Gratuit en Ligne',
+    seoSubtitle: 'Service Professionnel de Téléchargement Vidéo TikTok',
+    whyChooseUs: 'Pourquoi Choisir Notre Téléchargeur TikTok ?',
+    unlimitedDownloads: 'Téléchargements Gratuits Illimités',
+    unlimitedDownloadsDesc: 'Téléchargez autant de vidéos TikTok que vous voulez sans restrictions.',
+    allFormatsSupported: 'Tous les Formats Vidéo Supportés',
+    allFormatsSupportedDesc: 'Téléchargez des vidéos TikTok en MP4, sauvegardez l\'audio TikTok en MP3.',
+    noSoftwareRequired: 'Aucune Installation de Logiciel Requise',
+    noSoftwareRequiredDesc: 'Notre téléchargeur TikTok basé sur le web fonctionne directement dans votre navigateur.',
+    crossPlatformCompatibility: 'Fonctionne sur Tous les Appareils',
+    crossPlatformCompatibilityDesc: 'Compatible avec Windows, Mac, Linux, Android, et iOS.',
+    fastProcessing: 'Traitement Ultra Rapide',
+    fastProcessingDesc: 'Nos serveurs optimisés traitent et convertissent les vidéos TikTok en quelques secondes.',
+    privacySecure: 'Confidentialité et Sécurité d\'Abord',
+    privacySecureDesc: 'Nous ne stockons pas vos vidéos téléchargées ou informations personnelles.',
+    howItWorks: 'Comment Télécharger des Vidéos TikTok',
+    howItWorksDesc: 'Suivez ces étapes simples pour télécharger n\'importe quelle vidéo TikTok sans filigrane :',
+    step1Title: 'Copiez l\'URL de la Vidéo TikTok',
+    step1Desc: 'Ouvrez l\'app ou le site TikTok, trouvez la vidéo à télécharger, et copiez son lien.',
+    step2Title: 'Collez l\'URL dans Notre Téléchargeur',
+    step2Desc: 'Collez l\'URL de la vidéo TikTok dans notre champ de téléchargement ci-dessus.',
+    step3Title: 'Choisissez la Qualité et Téléchargez',
+    step3Desc: 'Sélectionnez votre qualité préférée et cliquez sur télécharger.',
+    advancedFeatures: 'Fonctionnalités Avancées de Téléchargement TikTok',
+    batchDownload: 'Support de Téléchargement en Lot',
+    batchDownloadDesc: 'Téléchargez plusieurs vidéos TikTok à la fois.',
+    audioExtraction: 'Extraction Audio',
+    audioExtractionDesc: 'Extrayez l\'audio de haute qualité des vidéos TikTok.',
+    thumbnailDownload: 'Téléchargement de Vignettes',
+    thumbnailDownloadDesc: 'Téléchargez les vignettes et images d\'aperçu des vidéos TikTok.',
     
     // FAQ
     faqTitle: 'Questions Fréquemment Posées',
@@ -685,7 +803,13 @@ export const translations = {
 
 export function useTranslation(language: Language = 'en') {
   const t = (key: TranslationKey): string => {
-    return translations[language][key] || translations.en[key] || key;
+    const translation = translations[language];
+    const englishTranslation = translations.en;
+    
+    // Try the selected language first, then fallback to English, then the key itself
+    return (translation && translation[key as keyof typeof translation]) || 
+           (englishTranslation && englishTranslation[key as keyof typeof englishTranslation]) || 
+           key;
   };
 
   return { t };
