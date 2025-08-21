@@ -25,6 +25,12 @@ import {
 } from "lucide-react";
 import { FAQItem } from "@/components/ui/faq-item";
 import { LanguageSelector } from "@/components/ui/language-selector";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { useTranslation, type Language } from "@/lib/translations";
 
 const createDownloadSchema = (t: any) => z.object({
@@ -32,17 +38,17 @@ const createDownloadSchema = (t: any) => z.object({
     (url) => url.includes("tiktok.com"),
     t('urlMustBeTiktok')
   ),
-  quality: z.enum(["hd", "sd", "audio"]).default("hd"),
 });
 
 type DownloadForm = {
   url: string;
-  quality: "hd" | "sd" | "audio";
 };
 
 export default function Home() {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
+  const [showDownloadOptions, setShowDownloadOptions] = useState(false);
+  const [videoData, setVideoData] = useState<any>(null);
   const { toast } = useToast();
   const { t } = useTranslation(currentLanguage);
 
@@ -66,31 +72,27 @@ export default function Home() {
     resolver: zodResolver(downloadSchema),
     defaultValues: {
       url: "",
-      quality: "hd",
     },
   });
 
   const downloadMutation = useMutation({
     mutationFn: async (data: DownloadForm) => {
-      const response = await apiRequest("POST", "/api/download", data);
-      return response.json();
+      const response = await apiRequest("/api/download", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+      return response;
     },
     onSuccess: (data) => {
-      if (data.downloadUrl) {
-        // Create download link
-        const link = document.createElement('a');
-        link.href = data.downloadUrl;
-        link.download = data.filename || 'tiktok-video';
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast({
-          title: t('successTitle'),
-          description: t('successDesc'),
+      if (data.success) {
+        setVideoData({
+          ...data,
+          thumbnail: 'https://via.placeholder.com/300x200?text=TikTok+Video',
+          title: 'TikTok Video'
         });
+        setShowDownloadOptions(true);
+      } else {
+        throw new Error(data.error || t('downloadError'));
       }
     },
     onError: (error) => {
@@ -121,6 +123,31 @@ export default function Home() {
     }
   };
 
+  const handleDownload = (type: 'video' | 'audio') => {
+    // Create download link
+    const link = document.createElement('a');
+    link.href = `#download-${type}`;
+    link.download = `tiktok-${type}`;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: t('successTitle'),
+      description: `${type === 'video' ? 'Video' : 'Audio'} download started`,
+    });
+  };
+
+  const handleDownloadOtherVideos = () => {
+    setShowDownloadOptions(false);
+    setVideoData(null);
+    form.reset();
+    // Redirect to home page
+    window.location.href = '/';
+  };
+
   return (
     <div className="min-h-screen gradient-bg font-inter">
       {/* Header */}
@@ -133,13 +160,41 @@ export default function Home() {
             </div>
             <div className="flex items-center space-x-6">
               <div className="hidden md:flex items-center space-x-6">
-                <a href="#features" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
-                  {t('features')}
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="text-cream-dark hover:text-accent-orange transition-colors duration-300 flex items-center space-x-1">
+                    <span>{t('otherDownloaders')}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-dark-secondary border-coffee">
+                    <DropdownMenuItem className="text-cream hover:bg-coffee/20">
+                      <a href="#" className="flex items-center space-x-2">
+                        <span>Instagram Downloader</span>
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-cream hover:bg-coffee/20">
+                      <a href="#" className="flex items-center space-x-2">
+                        <span>YouTube Downloader</span>
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-cream hover:bg-coffee/20">
+                      <a href="#" className="flex items-center space-x-2">
+                        <span>Twitter Downloader</span>
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-cream hover:bg-coffee/20">
+                      <a href="#" className="flex items-center space-x-2">
+                        <span>Snapchat Downloader</span>
+                      </a>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <a href="/about" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
+                  {t('aboutUs')}
                 </a>
-                <a href="#faq" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
+                <a href="/faq" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
                   {t('faq')}
                 </a>
-                <a href="#contact" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
+                <a href="/contact" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
                   {t('contact')}
                 </a>
               </div>
@@ -166,82 +221,93 @@ export default function Home() {
             {/* Download Form */}
             <Card className="card-gradient rounded-2xl p-8 mb-12 animate-slide-up border-0">
               <CardContent className="p-0">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="relative">
-                      <FormField
-                        control={form.control}
-                        name="url"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder={t('urlPlaceholder')}
-                                className="input-gradient w-full px-6 py-4 h-auto rounded-xl text-cream placeholder-cream-dark bg-transparent border-0 focus:ring-2 focus:ring-accent-orange transition-all duration-300"
-                                data-testid="input-tiktok-url"
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handlePasteFromClipboard}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-cream-dark hover:text-accent-orange hover:bg-transparent transition-colors duration-300 p-2"
-                        data-testid="button-paste-clipboard"
-                      >
-                        <Clipboard className="h-5 w-5" />
-                      </Button>
-                    </div>
-                    
-                    {/* Quality Selection */}
-                    <FormField
-                      control={form.control}
-                      name="quality"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex flex-wrap gap-6 justify-center"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="hd" id="hd" className="text-accent-orange border-cream-dark" data-testid="radio-quality-hd" />
-                                <Label htmlFor="hd" className="text-cream-dark cursor-pointer">{t('hdQuality')}</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="sd" id="sd" className="text-accent-orange border-cream-dark" data-testid="radio-quality-sd" />
-                                <Label htmlFor="sd" className="text-cream-dark cursor-pointer">{t('standardQuality')}</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="audio" id="audio" className="text-accent-orange border-cream-dark" data-testid="radio-quality-audio" />
-                                <Label htmlFor="audio" className="text-cream-dark cursor-pointer">{t('audioOnly')}</Label>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                {!showDownloadOptions ? (
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      <div className="relative">
+                        <FormField
+                          control={form.control}
+                          name="url"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder={t('urlPlaceholder')}
+                                  className="input-gradient w-full px-6 py-4 h-auto rounded-xl text-cream placeholder-cream-dark bg-transparent border-0 focus:ring-2 focus:ring-accent-orange transition-all duration-300 pr-20"
+                                  data-testid="input-tiktok-url"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handlePasteFromClipboard}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-cream-dark hover:text-accent-orange hover:bg-transparent transition-colors duration-300 px-3 py-1 text-sm"
+                          data-testid="button-paste-clipboard"
+                        >
+                          <Clipboard className="h-4 w-4 mr-1" />
+                          {t('paste')}
+                        </Button>
+                      </div>
 
-                    <Button
-                      type="submit"
-                      disabled={downloadMutation.isPending}
-                      className="btn-gradient w-full py-4 px-8 rounded-xl text-white font-semibold text-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 border-0"
-                      data-testid="button-download-video"
-                    >
-                      {downloadMutation.isPending ? (
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      ) : (
-                        <Download className="mr-2 h-5 w-5" />
-                      )}
-                      {downloadMutation.isPending ? t('processing') : t('downloadButton')}
-                    </Button>
-                  </form>
-                </Form>
+                      <Button
+                        type="submit"
+                        disabled={downloadMutation.isPending}
+                        className="btn-gradient w-full py-4 px-8 rounded-xl text-white font-semibold text-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 border-0"
+                        data-testid="button-download-video"
+                      >
+                        {downloadMutation.isPending ? (
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        ) : (
+                          <Download className="mr-2 h-5 w-5" />
+                        )}
+                        {downloadMutation.isPending ? t('processing') : t('downloadButton')}
+                      </Button>
+                    </form>
+                  </Form>
+                ) : (
+                  <div className="text-center">
+                    <div className="flex flex-col md:flex-row items-center gap-6">
+                      <div className="w-48 h-32 bg-gradient-to-br from-coffee to-dark-secondary rounded-lg flex items-center justify-center">
+                        <Play className="w-12 h-12 text-accent-orange" />
+                      </div>
+                      <div className="flex-1 text-center md:text-left">
+                        <h3 className="text-xl font-semibold text-cream mb-4">
+                          {videoData?.title || 'TikTok Video Ready'}
+                        </h3>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                          <Button 
+                            onClick={() => handleDownload('video')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
+                            data-testid="button-download-video-final"
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            {t('downloadVideo')}
+                          </Button>
+                          <Button 
+                            onClick={() => handleDownload('audio')}
+                            className="bg-dark-secondary hover:bg-coffee text-cream px-6 py-3 rounded-lg font-semibold border border-cream/20"
+                            data-testid="button-download-audio-final"
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            {t('downloadAudio')}
+                          </Button>
+                          <Button 
+                            onClick={() => handleDownloadOtherVideos()}
+                            className="bg-dark-secondary hover:bg-coffee text-cream px-6 py-3 rounded-lg font-semibold border border-cream/20"
+                            data-testid="button-download-other-videos"
+                          >
+                            {t('downloadOtherVideos')}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Loading State */}
                 {downloadMutation.isPending && (
@@ -508,30 +574,30 @@ export default function Home() {
             <div>
               <h4 className="font-semibold mb-4 text-cream">{t('company')}</h4>
               <ul className="space-y-2 text-cream-dark">
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">About Us</a></li>
-                <li><a href="#contact" className="hover:text-accent-orange transition-colors duration-300">{t('contact')}</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">{t('privacyPolicy')}</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">{t('termsOfService')}</a></li>
+                <li><a href="/about" className="hover:text-accent-orange transition-colors duration-300">{t('aboutUs')}</a></li>
+                <li><a href="/contact" className="hover:text-accent-orange transition-colors duration-300">{t('contact')}</a></li>
+                <li><a href="/privacy-policy" className="hover:text-accent-orange transition-colors duration-300">{t('privacyPolicy')}</a></li>
+                <li><a href="/terms-of-service" className="hover:text-accent-orange transition-colors duration-300">{t('termsOfService')}</a></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4 text-cream">{t('tools')}</h4>
               <ul className="space-y-2 text-cream-dark">
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">TikTok Video Downloader</a></li>
+                <li><a href="/" className="hover:text-accent-orange transition-colors duration-300">TikTok Video Downloader</a></li>
                 <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Instagram Downloader</a></li>
                 <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">YouTube Downloader</a></li>
                 <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Twitter Video Downloader</a></li>
+                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Snapchat Downloader</a></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4 text-cream">{t('legal')}</h4>
               <ul className="space-y-2 text-cream-dark">
-                <li><a href="#faq" className="hover:text-accent-orange transition-colors duration-300">{t('faq')}</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">{t('termsOfService')}</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">{t('privacyPolicy')}</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">{t('dmca')}</a></li>
+                <li><a href="/faq" className="hover:text-accent-orange transition-colors duration-300">{t('faq')}</a></li>
+                <li><a href="/terms-of-service" className="hover:text-accent-orange transition-colors duration-300">{t('termsOfService')}</a></li>
+                <li><a href="/privacy-policy" className="hover:text-accent-orange transition-colors duration-300">{t('privacyPolicy')}</a></li>
               </ul>
             </div>
           </div>
