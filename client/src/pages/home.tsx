@@ -77,11 +77,8 @@ export default function Home() {
 
   const downloadMutation = useMutation({
     mutationFn: async (data: DownloadForm) => {
-      const response = await apiRequest("/api/download", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
-      return response;
+      const response = await apiRequest("POST", "/api/download", data);
+      return response.json();
     },
     onSuccess: (data) => {
       if (data.success) {

@@ -8,7 +8,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // TikTok video download endpoint
   app.post("/api/download", async (req, res) => {
     try {
-      const { url, quality } = downloadRequestSchema.parse(req.body);
+      const { url } = downloadRequestSchema.parse(req.body);
+      const quality = "hd"; // Default quality since we removed the quality selector
       
       // Create download request in storage
       const downloadRequest = await storage.createDownloadRequest({ url, quality });
