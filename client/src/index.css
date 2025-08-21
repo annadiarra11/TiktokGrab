@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 6%);
+  --foreground: hsl(60, 9%, 98%);
+  --card: hsl(20, 14.3%, 4.1%);
+  --card-foreground: hsl(60, 9%, 98%);
+  --popover: hsl(0, 0%, 6%);
+  --popover-foreground: hsl(60, 9%, 98%);
+  --primary: hsl(20, 93%, 60%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(12, 6.5%, 15.1%);
+  --secondary-foreground: hsl(60, 9%, 98%);
+  --muted: hsl(12, 6.5%, 15.1%);
+  --muted-foreground: hsl(24, 5.4%, 63.9%);
+  --accent: hsl(12, 6.5%, 15.1%);
+  --accent-foreground: hsl(60, 9%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(60, 9%, 98%);
+  --border: hsl(12, 6.5%, 15.1%);
+  --input: hsl(12, 6.5%, 15.1%);
+  --ring: hsl(20, 93%, 60%);
+  --chart-1: hsl(20, 93%, 60%);
+  --chart-2: hsl(160, 60%, 45%);
+  --chart-3: hsl(30, 80%, 55%);
+  --chart-4: hsl(280, 65%, 60%);
+  --chart-5: hsl(340, 75%, 55%);
+  --sidebar: hsl(20, 14.3%, 4.1%);
+  --sidebar-foreground: hsl(60, 9%, 98%);
+  --sidebar-primary: hsl(20, 93%, 60%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(12, 6.5%, 15.1%);
+  --sidebar-accent-foreground: hsl(60, 9%, 98%);
+  --sidebar-border: hsl(12, 6.5%, 15.1%);
+  --sidebar-ring: hsl(20, 93%, 60%);
+  --font-sans: Inter, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 1rem;
+  
+  /* Custom dark gradient theme colors */
+  --dark-primary: hsl(0, 0%, 6%);
+  --dark-secondary: hsl(20, 33%, 6%);
+  --coffee: hsl(25, 50%, 12%);
+  --coffee-light: hsl(25, 44%, 18%);
+  --accent-orange: hsl(20, 93%, 60%);
+  --accent-orange-dark: hsl(20, 75%, 52%);
+  --cream: hsl(60, 29%, 96%);
+  --cream-dark: hsl(50, 20%, 88%);
+}
+
+.dark {
+  --background: hsl(0, 0%, 6%);
+  --foreground: hsl(60, 9%, 98%);
+  --card: hsl(20, 14.3%, 4.1%);
+  --card-foreground: hsl(60, 9%, 98%);
+  --popover: hsl(0, 0%, 6%);
+  --popover-foreground: hsl(60, 9%, 98%);
+  --primary: hsl(20, 93%, 60%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(12, 6.5%, 15.1%);
+  --secondary-foreground: hsl(60, 9%, 98%);
+  --muted: hsl(12, 6.5%, 15.1%);
+  --muted-foreground: hsl(24, 5.4%, 63.9%);
+  --accent: hsl(12, 6.5%, 15.1%);
+  --accent-foreground: hsl(60, 9%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(60, 9%, 98%);
+  --border: hsl(12, 6.5%, 15.1%);
+  --input: hsl(12, 6.5%, 15.1%);
+  --ring: hsl(20, 93%, 60%);
+  --chart-1: hsl(20, 93%, 60%);
+  --chart-2: hsl(160, 60%, 45%);
+  --chart-3: hsl(30, 80%, 55%);
+  --chart-4: hsl(280, 65%, 60%);
+  --chart-5: hsl(340, 75%, 55%);
+  --sidebar: hsl(20, 14.3%, 4.1%);
+  --sidebar-foreground: hsl(60, 9%, 98%);
+  --sidebar-primary: hsl(20, 93%, 60%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(12, 6.5%, 15.1%);
+  --sidebar-accent-foreground: hsl(60, 9%, 98%);
+  --sidebar-border: hsl(12, 6.5%, 15.1%);
+  --sidebar-ring: hsl(20, 93%, 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    background: linear-gradient(135deg, hsl(0, 0%, 6%) 0%, hsl(20, 33%, 6%) 50%, hsl(25, 50%, 12%) 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .gradient-bg {
+    background: linear-gradient(135deg, hsl(0, 0%, 6%) 0%, hsl(20, 33%, 6%) 50%, hsl(25, 50%, 12%) 100%);
+  }
+  
+  .card-gradient {
+    background: linear-gradient(145deg, hsla(25, 44%, 18%, 0.2) 0%, hsla(20, 33%, 6%, 0.8) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid hsla(20, 93%, 60%, 0.1);
+  }
+  
+  .input-gradient {
+    background: linear-gradient(145deg, hsla(25, 44%, 18%, 0.3) 0%, hsla(0, 0%, 6%, 0.9) 100%);
+    border: 1px solid hsla(20, 93%, 60%, 0.2);
+  }
+  
+  .btn-gradient {
+    background: linear-gradient(135deg, hsl(20, 93%, 60%) 0%, hsl(20, 75%, 52%) 100%);
+  }
+  
+  .btn-gradient:hover {
+    background: linear-gradient(135deg, hsl(20, 75%, 52%) 0%, hsl(20, 65%, 45%) 100%);
+  }
+  
+  .text-gradient {
+    background: linear-gradient(to right, hsl(60, 29%, 96%), hsl(20, 93%, 60%), hsl(60, 29%, 96%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s infinite;
+}
