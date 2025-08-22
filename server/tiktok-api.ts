@@ -49,12 +49,13 @@ export class TikTokAPI {
 
         // Method 2: Try other possible cover fields
         const thumbnailCandidates = [
+          data?.cover,
           data?.origin_cover,
           data?.dynamic_cover,
           data?.static_cover,
           data?.ai_dynamic_cover,
           data?.video_thumbnail,
-          data?.images?.[0], // For slideshow TikToks
+          data?.images?.[0],
         ];
 
         for (const candidate of thumbnailCandidates) {
@@ -261,6 +262,54 @@ export class TikTokAPI {
       throw new Error(
         `File download failed: ${error?.message || "Unknown error"}`,
       );
+    }
+  }
+
+  // New streaming method for fast downloads
+  static async streamFile(downloadUrl: string, res: any): Promise<void> {
+    try {
+      console.log(`[TikTok API] Streaming file from: ${downloadUrl}`);
+
+      const response = await fetch(downloadUrl, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          Referer: "https://www.tiktok.com/",
+          Accept: "*/*",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Stream failed: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      // Set response headers from the source
+      if (response.headers.get('content-length')) {
+        res.setHeader('Content-Length', response.headers.get('content-length'));
+      }
+
+      // Stream the response directly to the client using Node.js readable stream
+      if (response.body && response.body instanceof ReadableStream) {
+        // Convert Web ReadableStream to Node.js readable stream
+        const nodeReadable = response.body as any;
+        nodeReadable.pipe(res);
+      } else {
+        // Fallback: read as buffer and send
+        const buffer = Buffer.from(await response.arrayBuffer());
+        res.end(buffer);
+      }
+
+      console.log(`[TikTok API] File streaming completed`);
+    } catch (error: any) {
+      console.error(`[TikTok API] Stream error:`, error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: `File streaming failed: ${error?.message || "Unknown error"}`,
+        });
+      }
     }
   }
 }

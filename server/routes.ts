@@ -159,16 +159,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return;
         }
         
-        // Download the actual TikTok video
-        const videoBuffer = await TikTokAPI.downloadFile(videoUrl);
-        
+        // Set download headers
         res.setHeader('Content-Type', 'video/mp4');
         res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-video'}.mp4"`);
-        res.setHeader('Content-Length', videoBuffer.length.toString());
         res.setHeader('Cache-Control', 'no-cache');
         
-        // Send the actual video file
-        res.send(videoBuffer);
+        // Stream the video file directly (much faster than buffering)
+        await TikTokAPI.streamFile(videoUrl, res);
         
       } catch (downloadError: any) {
         console.error('Video download error:', downloadError);
@@ -227,9 +224,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return;
         }
         
-        // Download the audio file
-        const audioBuffer = await TikTokAPI.downloadFile(audioUrl);
-        
         // Set appropriate headers for audio
         const isAudioUrl = extractedData.downloads.audio === audioUrl;
         const contentType = isAudioUrl ? 'audio/mpeg' : 'video/mp4';
@@ -237,11 +231,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         res.setHeader('Content-Type', contentType);
         res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-audio'}.${extension}"`);
-        res.setHeader('Content-Length', audioBuffer.length.toString());
         res.setHeader('Cache-Control', 'no-cache');
         
-        // Send the audio file
-        res.send(audioBuffer);
+        // Stream the audio file directly (much faster than buffering)
+        await TikTokAPI.streamFile(audioUrl, res);
         
       } catch (downloadError: any) {
         console.error('Audio download error:', downloadError);
