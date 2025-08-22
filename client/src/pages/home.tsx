@@ -240,7 +240,7 @@ export default function Home() {
                           data-testid="button-paste-clipboard"
                         >
                           <Clipboard className="h-4 w-4 mr-1" />
-                          {form.watch("url") ? 'Clear' : t('paste')}
+                          {form.watch("url") ? t('clear') : t('paste')}
                         </Button>
                       </div>
 
@@ -257,7 +257,7 @@ export default function Home() {
                           ) : (
                             <Download className="mr-2 h-5 w-5" />
                           )}
-                          {downloadMutation.isPending && downloadType === 'video' ? t('processing') : 'Download Video'}
+                          {downloadMutation.isPending && downloadType === 'video' ? t('processing') : t('downloadVideo')}
                         </Button>
                         <Button
                           type="button"
@@ -271,7 +271,7 @@ export default function Home() {
                           ) : (
                             <Download className="mr-2 h-5 w-5" />
                           )}
-                          {downloadMutation.isPending && downloadType === 'audio' ? t('processing') : 'Download Audio'}
+                          {downloadMutation.isPending && downloadType === 'audio' ? t('processing') : t('downloadAudio')}
                         </Button>
                       </div>
                     </form>
@@ -304,7 +304,7 @@ export default function Home() {
                       </div>
                       <div className="flex-1 text-center md:text-left">
                         <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                          {videoData?.title || 'TikTok Video Ready'}
+                          {videoData?.title || t('videoReady')}
                         </h3>
                         {/* Show download options based on user choice */}
                         {!showDelayedOptions ? (
@@ -312,15 +312,15 @@ export default function Home() {
                             <Button 
                               onClick={() => {
                                 toast({
-                                  title: 'Please wait...',
-                                  description: 'Download options will appear in a moment',
+                                  title: t('pleaseWait'),
+                                  description: t('downloadOptionsWillAppear'),
                                 });
                               }}
                               className={`${downloadType === 'video' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-3 rounded-lg font-semibold animate-pulse`}
                               disabled
                             >
                               <Download className="mr-2 h-4 w-4" />
-                              {downloadType === 'video' ? 'Download Video' : 'Download Audio'}
+                              {downloadType === 'video' ? t('downloadVideo') : t('downloadAudio')}
                             </Button>
                           </div>
                         ) : (
@@ -331,14 +331,14 @@ export default function Home() {
                               data-testid={`button-download-${downloadType}-final`}
                             >
                               <Download className="mr-2 h-4 w-4" />
-                              {downloadType === 'video' ? 'Download Video' : 'Download Audio'}
+                              {downloadType === 'video' ? t('downloadVideo') : t('downloadAudio')}
                             </Button>
                             <Button 
                               onClick={() => handleDownloadOtherVideos()}
                               className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold"
                               data-testid="button-download-other-videos"
                             >
-                              {downloadType === 'video' ? 'Download Other Videos' : 'Download Other Audios'}
+                              {downloadType === 'video' ? t('downloadOtherVideos') : t('downloadOtherAudios')}
                             </Button>
                           </div>
                         )}
