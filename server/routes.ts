@@ -3,9 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { downloadRequestSchema } from "@shared/schema";
 import { z } from "zod";
-import fs from 'fs';
-import path from 'path';
-import { TikTokExtractor } from './tiktok-extractor';
+import { TikTokAPI } from './tiktok-api';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // TikTok video download endpoint
@@ -41,9 +39,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }, 3000); // Simulate 3 second processing time
       
-      // Extract real TikTok video data
+      // Extract real TikTok video data using professional API
       try {
-        const videoData = await TikTokExtractor.extractVideoData(url);
+        const videoData = await TikTokAPI.extractAndDownload(url);
         
         // Store the extracted video data for later download
         await storage.updateDownloadRequest(downloadRequest.id, {
@@ -59,24 +57,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({
           success: true,
           requestId: downloadRequest.id,
-          message: "Video processing started",
+          message: "Video ready for download",
           thumbnail: videoData.thumbnail,
           title: videoData.title,
           author: videoData.author,
-          filename: `tiktok-video-${quality}-${Date.now()}.mp4`,
+          filename: `${videoData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-video'}.mp4`,
         });
       } catch (extractionError: any) {
-        // Fallback to basic response if extraction fails
-        const videoId = url.split('/').pop()?.split('?')[0] || Date.now().toString();
+        console.error('TikTok extraction failed:', extractionError);
         
-        res.json({
-          success: true,
-          requestId: downloadRequest.id,
-          message: "Video processing started",
-          thumbnail: `https://picsum.photos/300/200?random=${Math.floor(Math.random() * 1000)}`,
-          title: `TikTok Video ${videoId.slice(-6)}`,
-          filename: `tiktok-video-${quality}-${Date.now()}.mp4`,
-          extractionError: extractionError?.message || 'Extraction failed',
+        res.status(400).json({
+          success: false,
+          message: "Failed to process TikTok video",
+          error: extractionError?.message || 'Unable to extract video data',
         });
       }
       
@@ -144,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the extracted video data
       const extractedData = (downloadRequest.metadata as any)?.extractedData;
       
-      if (!extractedData || !extractedData.videoUrl) {
+      if (!extractedData || !extractedData.downloads) {
         res.status(404).json({
           success: false,
           message: "Video data not available",
@@ -153,12 +146,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       try {
+        // Get the best quality video URL
+        const videoUrl = extractedData.downloads.hd || 
+                        extractedData.downloads.noWatermark || 
+                        extractedData.downloads.sd;
+        
+        if (!videoUrl) {
+          res.status(404).json({
+            success: false,
+            message: "No video download URL available",
+          });
+          return;
+        }
+        
         // Download the actual TikTok video
-        const videoBuffer = await TikTokExtractor.downloadVideo(extractedData.videoUrl);
+        const videoBuffer = await TikTokAPI.downloadFile(videoUrl);
         
         res.setHeader('Content-Type', 'video/mp4');
-        res.setHeader('Content-Disposition', `attachment; filename="tiktok-video-${Date.now()}.mp4"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-video'}.mp4"`);
         res.setHeader('Content-Length', videoBuffer.length.toString());
+        res.setHeader('Cache-Control', 'no-cache');
         
         // Send the actual video file
         res.send(videoBuffer);
@@ -197,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the extracted video data
       const extractedData = (downloadRequest.metadata as any)?.extractedData;
       
-      if (!extractedData) {
+      if (!extractedData || !extractedData.downloads) {
         res.status(404).json({
           success: false,
           message: "Audio data not available",
@@ -206,8 +213,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       try {
-        // Try to download from audio URL if available, otherwise use video URL
-        const audioUrl = extractedData.audioUrl || extractedData.videoUrl;
+        // Try to get audio URL, fallback to video URL for audio extraction
+        const audioUrl = extractedData.downloads.audio || 
+                        extractedData.downloads.hd || 
+                        extractedData.downloads.noWatermark || 
+                        extractedData.downloads.sd;
         
         if (!audioUrl) {
           res.status(404).json({
@@ -217,12 +227,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return;
         }
         
-        // Download the audio (or video to extract audio)
-        const audioBuffer = await TikTokExtractor.downloadVideo(audioUrl);
+        // Download the audio file
+        const audioBuffer = await TikTokAPI.downloadFile(audioUrl);
         
-        res.setHeader('Content-Type', 'audio/mpeg');
-        res.setHeader('Content-Disposition', `attachment; filename="tiktok-audio-${Date.now()}.mp3"`);
+        // Set appropriate headers for audio
+        const isAudioUrl = extractedData.downloads.audio === audioUrl;
+        const contentType = isAudioUrl ? 'audio/mpeg' : 'video/mp4';
+        const extension = isAudioUrl ? 'mp3' : 'mp4';
+        
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-audio'}.${extension}"`);
         res.setHeader('Content-Length', audioBuffer.length.toString());
+        res.setHeader('Cache-Control', 'no-cache');
         
         // Send the audio file
         res.send(audioBuffer);
