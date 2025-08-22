@@ -35,15 +35,15 @@ export class TikTokAPI {
 
       const data = result.result as any;
       
-      // Helper function to filter out creator avatars from thumbnail URLs
-      const isValidVideoThumbnail = (url: string | undefined): boolean => {
+      // Helper function to detect creator avatars (to deprioritize them)
+      const isCreatorAvatar = (url: string | undefined): boolean => {
         if (!url) return false;
-        // Filter out URLs that contain avatar indicators
-        const avatarIndicators = ['-avt-', 'avatar', 'profile', '/user/', '/author/'];
-        return !avatarIndicators.some(indicator => url.toLowerCase().includes(indicator));
+        // Check if URL contains avatar indicators
+        const avatarIndicators = ['-avt-', 'avatar'];
+        return avatarIndicators.some(indicator => url.toLowerCase().includes(indicator));
       };
 
-      // Get the best video thumbnail (not creator avatar)
+      // Get the best video thumbnail (prioritize video covers over creator avatars)
       const getThumbnail = () => {
         const thumbnailCandidates = [
           data?.static_cover,
@@ -55,15 +55,22 @@ export class TikTokAPI {
           data?.images?.[0]
         ];
         
-        // Find the first valid video thumbnail
+        // First, try to find a video cover (not avatar)
         for (const candidate of thumbnailCandidates) {
-          if (candidate && isValidVideoThumbnail(candidate)) {
+          if (candidate && !isCreatorAvatar(candidate)) {
             return candidate;
           }
         }
         
-        // If no valid thumbnail found, return undefined (will show play icon instead)
-        return undefined;
+        // If no video cover found, use any available thumbnail (including potential avatars)
+        for (const candidate of thumbnailCandidates) {
+          if (candidate) {
+            return candidate;
+          }
+        }
+        
+        // Last resort: use author avatar if available
+        return data?.author?.avatar;
       };
 
       // Extract video information with proper null checks
@@ -132,15 +139,15 @@ export class TikTokAPI {
         throw new Error(`tikwm.com returned error: ${data.msg}`);
       }
 
-      // Helper function to filter out creator avatars from thumbnail URLs
-      const isValidVideoThumbnail = (url: string | undefined): boolean => {
+      // Helper function to detect creator avatars (to deprioritize them)
+      const isCreatorAvatar = (url: string | undefined): boolean => {
         if (!url) return false;
-        // Filter out URLs that contain avatar indicators
-        const avatarIndicators = ['-avt-', 'avatar', 'profile', '/user/', '/author/'];
-        return !avatarIndicators.some(indicator => url.toLowerCase().includes(indicator));
+        // Check if URL contains avatar indicators
+        const avatarIndicators = ['-avt-', 'avatar'];
+        return avatarIndicators.some(indicator => url.toLowerCase().includes(indicator));
       };
 
-      // Get the best video thumbnail (not creator avatar)
+      // Get the best video thumbnail (prioritize video covers over creator avatars)
       const getThumbnail = () => {
         const thumbnailCandidates = [
           data.data.static_cover,
@@ -150,15 +157,22 @@ export class TikTokAPI {
           data.data.dynamic_cover
         ];
         
-        // Find the first valid video thumbnail
+        // First, try to find a video cover (not avatar)
         for (const candidate of thumbnailCandidates) {
-          if (candidate && isValidVideoThumbnail(candidate)) {
+          if (candidate && !isCreatorAvatar(candidate)) {
             return candidate;
           }
         }
         
-        // If no valid thumbnail found, return undefined (will show play icon instead)
-        return undefined;
+        // If no video cover found, use any available thumbnail (including potential avatars)
+        for (const candidate of thumbnailCandidates) {
+          if (candidate) {
+            return candidate;
+          }
+        }
+        
+        // Last resort: use author avatar if available
+        return data.data.author?.avatar;
       };
 
       return {
