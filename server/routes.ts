@@ -164,13 +164,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-video'}.mp4"`);
         res.setHeader('Cache-Control', 'no-cache');
         
-        // Try URL streaming first, fallback to yt-dlp if it fails
-        try {
-          await TikTokAPI.streamVideoToResponse(videoUrl, res);
-        } catch (streamError) {
-          console.log('[TikTok API] URL streaming failed, trying yt-dlp streaming...');
-          await TikTokAPI.streamVideoWithYtdlp(extractedData.originalUrl, res);
-        }
+        // Use yt-dlp streaming directly (most reliable for TikTok)
+        await TikTokAPI.streamVideoWithYtdlp(extractedData.originalUrl, res);
         
       } catch (downloadError: any) {
         console.error('Video download error:', downloadError);
@@ -238,13 +233,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-audio'}.${extension}"`);
         res.setHeader('Cache-Control', 'no-cache');
         
-        // Try URL streaming first, fallback to yt-dlp if it fails
-        try {
-          await TikTokAPI.streamVideoToResponse(audioUrl, res);
-        } catch (streamError) {
-          console.log('[TikTok API] Audio URL streaming failed, trying yt-dlp streaming...');
-          await TikTokAPI.streamVideoWithYtdlp(extractedData.originalUrl, res);
-        }
+        // Use yt-dlp streaming directly for audio extraction
+        await TikTokAPI.streamAudioWithYtdlp(extractedData.originalUrl, res);
         
       } catch (downloadError: any) {
         console.error('Audio download error:', downloadError);

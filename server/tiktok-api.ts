@@ -366,21 +366,18 @@ export class TikTokAPI {
   }
 
   /**
-   * Download and stream using yt-dlp (most reliable for problematic URLs)
+   * Download and stream video using yt-dlp (most reliable for TikTok)
    */
   static async streamVideoWithYtdlp(url: string, res: any): Promise<void> {
     try {
-      console.log(`[TikTok API] Streaming with yt-dlp: ${url}`);
+      console.log(`[TikTok API] Streaming video with yt-dlp: ${url}`);
 
-      // Set headers
-      res.setHeader('Content-Type', 'video/mp4');
-      res.setHeader('Content-Disposition', 'attachment; filename="tiktok-video.mp4"');
-      res.setHeader('Cache-Control', 'no-cache');
-
-      // Stream directly using yt-dlp
+      // Stream directly using yt-dlp with best quality
       const ytdlpProcess = execFile('yt-dlp', [
-        '--format', 'best[ext=mp4]',
+        '--format', 'best[ext=mp4]/best',
         '--output', '-', // Output to stdout
+        '--no-warnings',
+        '--quiet',
         url
       ]);
 
@@ -388,38 +385,195 @@ export class TikTokAPI {
         throw new Error("Failed to start yt-dlp process");
       }
 
+      // Set appropriate headers
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Content-Disposition', 'attachment; filename="tiktok-video.mp4"');
+      res.setHeader('Cache-Control', 'no-cache');
+
       // Pipe yt-dlp output directly to response
       ytdlpProcess.stdout.pipe(res);
 
       await new Promise<void>((resolve, reject) => {
+        let resolved = false;
+
+        const cleanup = () => {
+          if (!resolved) {
+            resolved = true;
+            ytdlpProcess.kill();
+          }
+        };
+
         ytdlpProcess.on('close', (code) => {
-          if (code === 0) {
-            console.log('[TikTok API] yt-dlp streaming completed successfully');
-            resolve();
-          } else {
-            reject(new Error(`yt-dlp process exited with code ${code}`));
+          if (!resolved) {
+            if (code === 0) {
+              console.log('[TikTok API] yt-dlp video streaming completed successfully');
+              resolved = true;
+              resolve();
+            } else {
+              console.error(`[TikTok API] yt-dlp process exited with code ${code}`);
+              resolved = true;
+              reject(new Error(`yt-dlp process failed with code ${code}`));
+            }
           }
         });
 
         ytdlpProcess.on('error', (error) => {
           console.error('[TikTok API] yt-dlp process error:', error);
-          reject(error);
+          cleanup();
+          if (!resolved) {
+            resolved = true;
+            reject(error);
+          }
+        });
+
+        ytdlpProcess.stderr?.on('data', (data) => {
+          console.error('[TikTok API] yt-dlp stderr:', data.toString());
         });
 
         res.on('close', () => {
-          console.log('[TikTok API] Client disconnected, killing yt-dlp process');
-          ytdlpProcess.kill();
-          resolve();
+          console.log('[TikTok API] Client disconnected, cleaning up yt-dlp process');
+          cleanup();
+          if (!resolved) {
+            resolved = true;
+            resolve();
+          }
         });
+
+        res.on('error', (error: any) => {
+          console.error('[TikTok API] Response error:', error);
+          cleanup();
+          if (!resolved) {
+            resolved = true;
+            reject(error);
+          }
+        });
+
+        // Timeout after 2 minutes
+        setTimeout(() => {
+          if (!resolved) {
+            console.log('[TikTok API] yt-dlp streaming timeout');
+            cleanup();
+            resolved = true;
+            reject(new Error('Streaming timeout'));
+          }
+        }, 2 * 60 * 1000);
       });
 
     } catch (error: any) {
-      console.error(`[TikTok API] yt-dlp streaming error:`, error);
+      console.error(`[TikTok API] yt-dlp video streaming error:`, error);
       
       if (!res.headersSent) {
         res.status(500).json({
           success: false,
-          message: `yt-dlp streaming failed: ${error?.message || "Unknown error"}`,
+          message: `Video streaming failed: ${error?.message || "Unknown error"}`,
+        });
+      }
+    }
+  }
+
+  /**
+   * Download and stream audio using yt-dlp (extracts audio from video)
+   */
+  static async streamAudioWithYtdlp(url: string, res: any): Promise<void> {
+    try {
+      console.log(`[TikTok API] Streaming audio with yt-dlp: ${url}`);
+
+      // Stream audio using yt-dlp with audio extraction
+      const ytdlpProcess = execFile('yt-dlp', [
+        '--format', 'bestaudio/best',
+        '--extract-audio',
+        '--audio-format', 'mp3',
+        '--output', '-', // Output to stdout
+        '--no-warnings',
+        '--quiet',
+        url
+      ]);
+
+      if (!ytdlpProcess.stdout) {
+        throw new Error("Failed to start yt-dlp process for audio");
+      }
+
+      // Set appropriate headers for audio
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Content-Disposition', 'attachment; filename="tiktok-audio.mp3"');
+      res.setHeader('Cache-Control', 'no-cache');
+
+      // Pipe yt-dlp output directly to response
+      ytdlpProcess.stdout.pipe(res);
+
+      await new Promise<void>((resolve, reject) => {
+        let resolved = false;
+
+        const cleanup = () => {
+          if (!resolved) {
+            resolved = true;
+            ytdlpProcess.kill();
+          }
+        };
+
+        ytdlpProcess.on('close', (code) => {
+          if (!resolved) {
+            if (code === 0) {
+              console.log('[TikTok API] yt-dlp audio streaming completed successfully');
+              resolved = true;
+              resolve();
+            } else {
+              console.error(`[TikTok API] yt-dlp audio process exited with code ${code}`);
+              resolved = true;
+              reject(new Error(`yt-dlp audio process failed with code ${code}`));
+            }
+          }
+        });
+
+        ytdlpProcess.on('error', (error) => {
+          console.error('[TikTok API] yt-dlp audio process error:', error);
+          cleanup();
+          if (!resolved) {
+            resolved = true;
+            reject(error);
+          }
+        });
+
+        ytdlpProcess.stderr?.on('data', (data) => {
+          console.error('[TikTok API] yt-dlp audio stderr:', data.toString());
+        });
+
+        res.on('close', () => {
+          console.log('[TikTok API] Client disconnected, cleaning up yt-dlp audio process');
+          cleanup();
+          if (!resolved) {
+            resolved = true;
+            resolve();
+          }
+        });
+
+        res.on('error', (error: any) => {
+          console.error('[TikTok API] Audio response error:', error);
+          cleanup();
+          if (!resolved) {
+            resolved = true;
+            reject(error);
+          }
+        });
+
+        // Timeout after 2 minutes
+        setTimeout(() => {
+          if (!resolved) {
+            console.log('[TikTok API] yt-dlp audio streaming timeout');
+            cleanup();
+            resolved = true;
+            reject(new Error('Audio streaming timeout'));
+          }
+        }, 2 * 60 * 1000);
+      });
+
+    } catch (error: any) {
+      console.error(`[TikTok API] yt-dlp audio streaming error:`, error);
+      
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: `Audio streaming failed: ${error?.message || "Unknown error"}`,
         });
       }
     }
