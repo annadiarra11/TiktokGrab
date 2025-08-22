@@ -13,10 +13,10 @@ export default function About() {
       <header className="bg-blue-600 py-6 px-4 sm:px-6 lg:px-8 shadow-md">
         <div className="max-w-7xl mx-auto">
           <nav className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+            <a href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity" data-testid="link-home-logo">
               <Video className="text-white text-2xl" />
               <span className="text-2xl font-bold text-white">{t('brand')}</span>
-            </div>
+            </a>
             <div className="flex items-center space-x-6">
               <a href="/" className="text-white hover:text-blue-200 transition-colors">{t('home')}</a>
               <LanguageSelector 

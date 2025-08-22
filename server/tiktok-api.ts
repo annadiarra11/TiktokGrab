@@ -40,7 +40,7 @@ export class TikTokAPI {
         success: true,
         title: data?.desc || data?.title || 'TikTok Video',
         author: data?.author?.nickname || data?.author?.unique_id || 'Unknown',
-        thumbnail: data?.video_thumbnail || data?.cover || data?.origin_cover || data?.dynamic_cover || data?.images?.[0] || data?.author?.avatar,
+        thumbnail: data?.video_thumbnail || data?.cover || data?.origin_cover || data?.dynamic_cover || data?.images?.[0],
         duration: data?.duration,
         downloads: {
           hd: data?.videoHD || data?.hd || data?.play,
