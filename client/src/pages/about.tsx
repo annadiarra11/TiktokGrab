@@ -94,6 +94,7 @@ export default function About() {
           </a>
         </div>
       </div>
+      </div>
       
       {/* Footer */}
       <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-black">
