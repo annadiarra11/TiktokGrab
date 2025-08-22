@@ -469,41 +469,41 @@ export default function Home() {
                 
                 <Card className="card-gradient rounded-xl p-6 border-0">
                   <CardContent className="p-0">
-                    <Video className="text-accent-orange text-3xl mb-4" />
-                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('allFormatsSupported')}</h4>
-                    <p className="text-cream-dark text-sm">{t('allFormatsSupportedDesc')}</p>
+                    <Video className="text-blue-600 text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-gray-800">{t('allFormatsSupported')}</h4>
+                    <p className="text-gray-600 text-sm">{t('allFormatsSupportedDesc')}</p>
                   </CardContent>
                 </Card>
                 
                 <Card className="card-gradient rounded-xl p-6 border-0">
                   <CardContent className="p-0">
-                    <Zap className="text-accent-orange text-3xl mb-4" />
-                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('fastProcessing')}</h4>
-                    <p className="text-cream-dark text-sm">{t('fastProcessingDesc')}</p>
+                    <Zap className="text-blue-600 text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-gray-800">{t('fastProcessing')}</h4>
+                    <p className="text-gray-600 text-sm">{t('fastProcessingDesc')}</p>
                   </CardContent>
                 </Card>
                 
                 <Card className="card-gradient rounded-xl p-6 border-0">
                   <CardContent className="p-0">
-                    <Shield className="text-accent-orange text-3xl mb-4" />
-                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('privacySecure')}</h4>
-                    <p className="text-cream-dark text-sm">{t('privacySecureDesc')}</p>
+                    <Shield className="text-blue-600 text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-gray-800">{t('privacySecure')}</h4>
+                    <p className="text-gray-600 text-sm">{t('privacySecureDesc')}</p>
                   </CardContent>
                 </Card>
                 
                 <Card className="card-gradient rounded-xl p-6 border-0">
                   <CardContent className="p-0">
-                    <Smartphone className="text-accent-orange text-3xl mb-4" />
-                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('crossPlatformCompatibility')}</h4>
-                    <p className="text-cream-dark text-sm">{t('crossPlatformCompatibilityDesc')}</p>
+                    <Smartphone className="text-blue-600 text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-gray-800">{t('crossPlatformCompatibility')}</h4>
+                    <p className="text-gray-600 text-sm">{t('crossPlatformCompatibilityDesc')}</p>
                   </CardContent>
                 </Card>
                 
                 <Card className="card-gradient rounded-xl p-6 border-0">
                   <CardContent className="p-0">
-                    <Loader2 className="text-accent-orange text-3xl mb-4" />
-                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('noSoftwareRequired')}</h4>
-                    <p className="text-cream-dark text-sm">{t('noSoftwareRequiredDesc')}</p>
+                    <Loader2 className="text-blue-600 text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-gray-800">{t('noSoftwareRequired')}</h4>
+                    <p className="text-gray-600 text-sm">{t('noSoftwareRequiredDesc')}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -577,7 +577,7 @@ export default function Home() {
       </main>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-100">
+      <section id="faq" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">{t('faqTitle')}</h2>
           
