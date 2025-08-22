@@ -1,8 +1,9 @@
 import { useTranslation, type Language } from '@/lib/translations';
 import { Card, CardContent } from '@/components/ui/card';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronUp, Video } from 'lucide-react';
 import { LanguageSelector } from '@/components/ui/language-selector';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FAQItemProps {
   question: string;
@@ -39,21 +40,9 @@ function FAQItem({ question, answer, isOpen = false, onToggle }: FAQItemProps) {
 }
 
 export default function FAQ() {
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
+  const { currentLanguage, setLanguage } = useLanguage();
   const { t } = useTranslation(currentLanguage);
   const [openItems, setOpenItems] = useState<number[]>([0]);
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('selectedLanguage') as Language;
-    if (savedLanguage && ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ja', 'ko', 'ar', 'it', 'ru', 'hi', 'tr', 'nl', 'sv', 'pl', 'th', 'vi', 'id', 'ms'].includes(savedLanguage)) {
-      setCurrentLanguage(savedLanguage);
-    }
-  }, []);
-
-  const handleLanguageChange = (language: Language) => {
-    setCurrentLanguage(language);
-    localStorage.setItem('selectedLanguage', language);
-  };
 
   const toggleItem = (index: number) => {
     setOpenItems(prev => 
@@ -90,7 +79,7 @@ export default function FAQ() {
               <a href="/" className="text-white hover:text-blue-200 transition-colors">{t('home')}</a>
               <LanguageSelector 
                 currentLanguage={currentLanguage} 
-                onLanguageChange={handleLanguageChange} 
+                onLanguageChange={setLanguage} 
               />
             </div>
           </nav>

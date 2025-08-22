@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { useTranslation, type Language } from "@/lib/translations";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const createDownloadSchema = (t: any) => z.object({
   url: z.string().url(t('invalidUrl')).refine(
@@ -46,27 +47,13 @@ type DownloadForm = {
 
 export default function Home() {
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [videoData, setVideoData] = useState<any>(null);
   const [showDelayedOptions, setShowDelayedOptions] = useState(false);
   const [downloadType, setDownloadType] = useState<'video' | 'audio'>('video');
   const { toast } = useToast();
+  const { currentLanguage, setLanguage } = useLanguage();
   const { t } = useTranslation(currentLanguage);
-
-  // Load language from localStorage on component mount
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('selectedLanguage') as Language;
-    if (savedLanguage && ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ja', 'ko', 'ar', 'it', 'ru', 'hi', 'tr', 'nl', 'sv', 'pl', 'th', 'vi', 'id', 'ms'].includes(savedLanguage)) {
-      setCurrentLanguage(savedLanguage);
-    }
-  }, []);
-
-  // Save language to localStorage when it changes
-  const handleLanguageChange = (language: Language) => {
-    setCurrentLanguage(language);
-    localStorage.setItem('selectedLanguage', language);
-  };
 
   const downloadSchema = createDownloadSchema(t);
 
@@ -203,7 +190,7 @@ export default function Home() {
             <div className="flex items-center space-x-6">
               <LanguageSelector 
                 currentLanguage={currentLanguage} 
-                onLanguageChange={handleLanguageChange} 
+                onLanguageChange={setLanguage} 
               />
             </div>
           </nav>

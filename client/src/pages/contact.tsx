@@ -5,23 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Mail, MessageCircle, Phone, MapPin, Video } from 'lucide-react';
 import { LanguageSelector } from '@/components/ui/language-selector';
-import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Contact() {
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
+  const { currentLanguage, setLanguage } = useLanguage();
   const { t } = useTranslation(currentLanguage);
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('selectedLanguage') as Language;
-    if (savedLanguage && ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ja', 'ko', 'ar', 'it', 'ru', 'hi', 'tr', 'nl', 'sv', 'pl', 'th', 'vi', 'id', 'ms'].includes(savedLanguage)) {
-      setCurrentLanguage(savedLanguage);
-    }
-  }, []);
-
-  const handleLanguageChange = (language: Language) => {
-    setCurrentLanguage(language);
-    localStorage.setItem('selectedLanguage', language);
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +30,7 @@ export default function Contact() {
               <a href="/" className="text-white hover:text-blue-200 transition-colors">{t('home')}</a>
               <LanguageSelector 
                 currentLanguage={currentLanguage} 
-                onLanguageChange={handleLanguageChange} 
+                onLanguageChange={setLanguage} 
               />
             </div>
           </nav>

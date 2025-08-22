@@ -1,23 +1,11 @@
 import { useTranslation, type Language } from '@/lib/translations';
 import { Video } from 'lucide-react';
 import { LanguageSelector } from '@/components/ui/language-selector';
-import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function About() {
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
+  const { currentLanguage, setLanguage } = useLanguage();
   const { t } = useTranslation(currentLanguage);
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('selectedLanguage') as Language;
-    if (savedLanguage && ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ja', 'ko', 'ar', 'it', 'ru', 'hi', 'tr', 'nl', 'sv', 'pl', 'th', 'vi', 'id', 'ms'].includes(savedLanguage)) {
-      setCurrentLanguage(savedLanguage);
-    }
-  }, []);
-
-  const handleLanguageChange = (language: Language) => {
-    setCurrentLanguage(language);
-    localStorage.setItem('selectedLanguage', language);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-inter">
@@ -33,7 +21,7 @@ export default function About() {
               <a href="/" className="text-white hover:text-blue-200 transition-colors">{t('home')}</a>
               <LanguageSelector 
                 currentLanguage={currentLanguage} 
-                onLanguageChange={handleLanguageChange} 
+                onLanguageChange={setLanguage} 
               />
             </div>
           </nav>
