@@ -190,26 +190,35 @@ export class TikTokAPI {
   }
 
   /**
-   * Stream audio using yt-dlp (FIXED VERSION)
+   * Stream audio using yt-dlp piped through ffmpeg for audio extraction
    */
   static async streamAudioWithYtdlp(url: string, res: any): Promise<void> {
     return new Promise((resolve, reject) => {
-      console.log(`[TikTok API] Streaming audio with yt-dlp: ${url}`);
+      console.log(`[TikTok API] Streaming audio with yt-dlp + ffmpeg: ${url}`);
 
       // Set headers first
       res.setHeader('Content-Type', 'audio/mpeg');
       res.setHeader('Content-Disposition', 'attachment; filename="tiktok-audio.mp3"');
       res.setHeader('Cache-Control', 'no-cache');
 
-      // Use spawn for audio extraction - try audio-only first, fallback to extracting from video
+      // Start yt-dlp to download video
       const ytdlpProcess = spawn('yt-dlp', [
-        '--format', 'bestaudio/best',
-        '--extract-audio',
-        '--audio-format', 'mp3',
-        '--audio-quality', '192K',
+        '--format', 'best[ext=mp4]/best',
         '--output', '-',
         '--no-warnings',
         url
+      ], {
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
+
+      // Start ffmpeg to extract audio from the video stream
+      const ffmpegProcess = spawn('ffmpeg', [
+        '-i', 'pipe:0',           // Input from stdin (yt-dlp output)
+        '-vn',                    // No video
+        '-acodec', 'mp3',         // Audio codec MP3
+        '-ab', '192k',            // Audio bitrate
+        '-f', 'mp3',              // Output format MP3
+        'pipe:1'                  // Output to stdout
       ], {
         stdio: ['pipe', 'pipe', 'pipe']
       });
@@ -222,23 +231,27 @@ export class TikTokAPI {
           resolved = true;
           try {
             ytdlpProcess.kill('SIGTERM');
+            ffmpegProcess.kill('SIGTERM');
           } catch (e) {
-            // Process might already be dead
+            // Processes might already be dead
           }
         }
       };
 
-      // Handle stdout data
-      ytdlpProcess.stdout.on('data', (chunk) => {
+      // Pipe yt-dlp output to ffmpeg input
+      ytdlpProcess.stdout.pipe(ffmpegProcess.stdin);
+
+      // Handle ffmpeg stdout (the actual MP3 audio data)
+      ffmpegProcess.stdout.on('data', (chunk) => {
         dataReceived = true;
         if (!resolved) {
           res.write(chunk);
         }
       });
 
-      // Handle stdout end
-      ytdlpProcess.stdout.on('end', () => {
-        console.log('[TikTok API] yt-dlp audio stdout ended');
+      // Handle ffmpeg stdout end
+      ffmpegProcess.stdout.on('end', () => {
+        console.log('[TikTok API] ffmpeg audio stdout ended');
         if (!resolved && dataReceived) {
           resolved = true;
           res.end();
@@ -246,9 +259,9 @@ export class TikTokAPI {
         }
       });
 
-      // Handle process exit
-      ytdlpProcess.on('exit', (code, signal) => {
-        console.log(`[TikTok API] yt-dlp audio process exited with code: ${code}, signal: ${signal}`);
+      // Handle ffmpeg process exit
+      ffmpegProcess.on('exit', (code, signal) => {
+        console.log(`[TikTok API] ffmpeg audio process exited with code: ${code}, signal: ${signal}`);
         if (!resolved) {
           if (code === 0 && dataReceived) {
             resolved = true;
@@ -256,14 +269,34 @@ export class TikTokAPI {
             resolve();
           } else {
             resolved = true;
-            reject(new Error(`yt-dlp audio process failed with code ${code}`));
+            reject(new Error(`ffmpeg audio process failed with code ${code}`));
           }
+        }
+      });
+
+      // Handle yt-dlp process exit
+      ytdlpProcess.on('exit', (code, signal) => {
+        console.log(`[TikTok API] yt-dlp video process exited with code: ${code}, signal: ${signal}`);
+        // Close ffmpeg input when yt-dlp is done
+        try {
+          ffmpegProcess.stdin.end();
+        } catch (e) {
+          // Already closed
         }
       });
 
       // Handle process errors
       ytdlpProcess.on('error', (error) => {
-        console.error('[TikTok API] yt-dlp audio process error:', error);
+        console.error('[TikTok API] yt-dlp process error:', error);
+        cleanup();
+        if (!resolved) {
+          resolved = true;
+          reject(error);
+        }
+      });
+
+      ffmpegProcess.on('error', (error) => {
+        console.error('[TikTok API] ffmpeg process error:', error);
         cleanup();
         if (!resolved) {
           resolved = true;
@@ -274,16 +307,20 @@ export class TikTokAPI {
       // Handle stderr for debugging
       ytdlpProcess.stderr.on('data', (data) => {
         const errorMsg = data.toString();
-        console.error('[TikTok API] yt-dlp audio stderr:', errorMsg);
+        console.error('[TikTok API] yt-dlp stderr:', errorMsg);
         
-        // Check for specific errors
         if (errorMsg.includes('ERROR:') || errorMsg.includes('Unable to extract')) {
           cleanup();
           if (!resolved) {
             resolved = true;
-            reject(new Error(`yt-dlp audio error: ${errorMsg}`));
+            reject(new Error(`yt-dlp error: ${errorMsg}`));
           }
         }
+      });
+
+      ffmpegProcess.stderr.on('data', (data) => {
+        const errorMsg = data.toString();
+        console.error('[TikTok API] ffmpeg stderr:', errorMsg);
       });
 
       // Handle client disconnect
@@ -308,7 +345,7 @@ export class TikTokAPI {
       // Timeout after 3 minutes
       setTimeout(() => {
         if (!resolved) {
-          console.log('[TikTok API] yt-dlp audio streaming timeout');
+          console.log('[TikTok API] Audio streaming timeout');
           cleanup();
           resolved = true;
           reject(new Error('Audio streaming timeout after 3 minutes'));
