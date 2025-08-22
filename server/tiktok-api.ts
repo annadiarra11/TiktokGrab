@@ -35,12 +35,43 @@ export class TikTokAPI {
 
       const data = result.result as any;
       
+      // Helper function to filter out creator avatars from thumbnail URLs
+      const isValidVideoThumbnail = (url: string | undefined): boolean => {
+        if (!url) return false;
+        // Filter out URLs that contain avatar indicators
+        const avatarIndicators = ['-avt-', 'avatar', 'profile', '/user/', '/author/'];
+        return !avatarIndicators.some(indicator => url.toLowerCase().includes(indicator));
+      };
+
+      // Get the best video thumbnail (not creator avatar)
+      const getThumbnail = () => {
+        const thumbnailCandidates = [
+          data?.static_cover,
+          data?.ai_dynamic_cover,
+          data?.video_thumbnail,
+          data?.cover,
+          data?.origin_cover,
+          data?.dynamic_cover,
+          data?.images?.[0]
+        ];
+        
+        // Find the first valid video thumbnail
+        for (const candidate of thumbnailCandidates) {
+          if (candidate && isValidVideoThumbnail(candidate)) {
+            return candidate;
+          }
+        }
+        
+        // If no valid thumbnail found, return undefined (will show play icon instead)
+        return undefined;
+      };
+
       // Extract video information with proper null checks
       const videoInfo: TikTokVideoResult = {
         success: true,
         title: data?.desc || data?.title || 'TikTok Video',
         author: data?.author?.nickname || data?.author?.unique_id || 'Unknown',
-        thumbnail: data?.video_thumbnail || data?.cover || data?.origin_cover || data?.dynamic_cover || data?.images?.[0],
+        thumbnail: getThumbnail(),
         duration: data?.duration,
         downloads: {
           hd: data?.videoHD || data?.hd || data?.play,
@@ -101,11 +132,40 @@ export class TikTokAPI {
         throw new Error(`tikwm.com returned error: ${data.msg}`);
       }
 
+      // Helper function to filter out creator avatars from thumbnail URLs
+      const isValidVideoThumbnail = (url: string | undefined): boolean => {
+        if (!url) return false;
+        // Filter out URLs that contain avatar indicators
+        const avatarIndicators = ['-avt-', 'avatar', 'profile', '/user/', '/author/'];
+        return !avatarIndicators.some(indicator => url.toLowerCase().includes(indicator));
+      };
+
+      // Get the best video thumbnail (not creator avatar)
+      const getThumbnail = () => {
+        const thumbnailCandidates = [
+          data.data.static_cover,
+          data.data.ai_dynamic_cover,
+          data.data.cover,
+          data.data.origin_cover,
+          data.data.dynamic_cover
+        ];
+        
+        // Find the first valid video thumbnail
+        for (const candidate of thumbnailCandidates) {
+          if (candidate && isValidVideoThumbnail(candidate)) {
+            return candidate;
+          }
+        }
+        
+        // If no valid thumbnail found, return undefined (will show play icon instead)
+        return undefined;
+      };
+
       return {
         success: true,
         title: data.data.title || 'TikTok Video',
         author: data.data.author?.nickname || 'Unknown',
-        thumbnail: data.data.cover || data.data.origin_cover,
+        thumbnail: getThumbnail(),
         duration: data.data.duration,
         downloads: {
           hd: data.data.hdplay || data.data.play,
