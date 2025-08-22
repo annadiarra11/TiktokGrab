@@ -1,14 +1,50 @@
-import { useTranslation } from '@/lib/translations';
+import { useTranslation, type Language } from '@/lib/translations';
+import { Video } from 'lucide-react';
+import { LanguageSelector } from '@/components/ui/language-selector';
+import { useState, useEffect } from 'react';
 
 export default function PrivacyPolicy() {
-  const { t } = useTranslation();
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
+  const { t } = useTranslation(currentLanguage);
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('selectedLanguage') as Language;
+    if (savedLanguage && ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ja', 'ko', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  const handleLanguageChange = (language: Language) => {
+    setCurrentLanguage(language);
+    localStorage.setItem('selectedLanguage', language);
+  };
 
   return (
-    <div className="min-h-screen bg-dark-primary">
-      <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-inter">
+      {/* Header */}
+      <header className="bg-blue-600 py-6 px-4 sm:px-6 lg:px-8 shadow-md">
+        <div className="max-w-7xl mx-auto">
+          <nav className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Video className="text-white text-2xl" />
+              <span className="text-2xl font-bold text-white">{t('brand')}</span>
+            </div>
+            <div className="flex items-center space-x-6">
+              <a href="/" className="text-white hover:text-blue-200 transition-colors">Home</a>
+              <LanguageSelector 
+                currentLanguage={currentLanguage} 
+                onLanguageChange={handleLanguageChange} 
+              />
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      <div className="bg-white">
+        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-cream mb-6">{t('privacyPolicy')}</h1>
-          <p className="text-xl text-cream-dark">
+          <h1 className="text-4xl font-bold text-gray-800 mb-6">{t('privacyPolicy')}</h1>
+          <p className="text-xl text-gray-600">
             {t('privacyPolicyDesc')}
           </p>
         </div>

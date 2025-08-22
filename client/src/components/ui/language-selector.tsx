@@ -21,7 +21,7 @@ export function LanguageSelector({ currentLanguage, onLanguageChange }: Language
         <Button 
           variant="ghost" 
           size="sm" 
-          className="text-cream-dark hover:text-accent-orange hover:bg-coffee-light/50 transition-all duration-300"
+          className="text-black hover:text-blue-600 hover:bg-gray-100 transition-all duration-300"
           data-testid="button-language-selector"
         >
           <Globe className="h-4 w-4 mr-2" />
@@ -30,15 +30,15 @@ export function LanguageSelector({ currentLanguage, onLanguageChange }: Language
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="card-gradient border-0 backdrop-blur-lg"
+        className="bg-white border border-gray-200 shadow-lg"
         data-testid="dropdown-language-menu"
       >
         {Object.entries(languages).map(([code, name]) => (
           <DropdownMenuItem
             key={code}
             onClick={() => onLanguageChange(code as Language)}
-            className={`text-cream-dark hover:text-accent-orange hover:bg-coffee-light/50 transition-all duration-300 cursor-pointer ${
-              currentLanguage === code ? 'bg-coffee-light/30 text-accent-orange' : ''
+            className={`text-black hover:text-blue-600 hover:bg-gray-100 transition-all duration-300 cursor-pointer ${
+              currentLanguage === code ? 'bg-blue-100 text-blue-600 font-semibold' : ''
             }`}
             data-testid={`language-option-${code}`}
           >

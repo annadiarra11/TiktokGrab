@@ -1,7 +1,8 @@
-import { useTranslation } from '@/lib/translations';
+import { useTranslation, type Language } from '@/lib/translations';
 import { Card, CardContent } from '@/components/ui/card';
-import { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronDown, ChevronUp, Video } from 'lucide-react';
+import { LanguageSelector } from '@/components/ui/language-selector';
 
 interface FAQItemProps {
   question: string;
@@ -12,24 +13,24 @@ interface FAQItemProps {
 
 function FAQItem({ question, answer, isOpen = false, onToggle }: FAQItemProps) {
   return (
-    <Card className="card-gradient border-0">
+    <Card className="bg-white shadow-md rounded-xl overflow-hidden border border-gray-200">
       <CardContent className="p-0">
         <button 
-          className="w-full text-left p-6 focus:outline-none"
+          className="w-full text-left p-6 focus:outline-none bg-black hover:bg-gray-800 transition-colors duration-300 text-white"
           onClick={onToggle}
         >
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-cream pr-4">{question}</h3>
+            <h3 className="text-lg font-semibold text-white pr-4">{question}</h3>
             {isOpen ? (
-              <ChevronUp className="text-accent-orange text-xl flex-shrink-0" />
+              <ChevronUp className="text-gray-300 text-xl flex-shrink-0" />
             ) : (
-              <ChevronDown className="text-accent-orange text-xl flex-shrink-0" />
+              <ChevronDown className="text-gray-300 text-xl flex-shrink-0" />
             )}
           </div>
         </button>
         {isOpen && (
-          <div className="px-6 pb-6">
-            <p className="text-cream-dark leading-relaxed">{answer}</p>
+          <div className="px-6 pb-6 bg-white">
+            <p className="text-gray-700 leading-relaxed">{answer}</p>
           </div>
         )}
       </CardContent>
@@ -38,8 +39,21 @@ function FAQItem({ question, answer, isOpen = false, onToggle }: FAQItemProps) {
 }
 
 export default function FAQ() {
-  const { t } = useTranslation();
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
+  const { t } = useTranslation(currentLanguage);
   const [openItems, setOpenItems] = useState<number[]>([0]);
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('selectedLanguage') as Language;
+    if (savedLanguage && ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ja', 'ko', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  const handleLanguageChange = (language: Language) => {
+    setCurrentLanguage(language);
+    localStorage.setItem('selectedLanguage', language);
+  };
 
   const toggleItem = (index: number) => {
     setOpenItems(prev => 
@@ -63,11 +77,31 @@ export default function FAQ() {
   ];
 
   return (
-    <div className="min-h-screen bg-dark-primary">
-      <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-inter">
+      {/* Header */}
+      <header className="bg-blue-600 py-6 px-4 sm:px-6 lg:px-8 shadow-md">
+        <div className="max-w-7xl mx-auto">
+          <nav className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Video className="text-white text-2xl" />
+              <span className="text-2xl font-bold text-white">{t('brand')}</span>
+            </div>
+            <div className="flex items-center space-x-6">
+              <a href="/" className="text-white hover:text-blue-200 transition-colors">Home</a>
+              <LanguageSelector 
+                currentLanguage={currentLanguage} 
+                onLanguageChange={handleLanguageChange} 
+              />
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      <div className="bg-white">
+        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-cream mb-6">{t('faqTitle')}</h1>
-          <p className="text-xl text-cream-dark max-w-3xl mx-auto">
+          <h1 className="text-4xl font-bold text-gray-800 mb-6">{t('faqTitle')}</h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             {t('faqPageDesc')}
           </p>
         </div>
@@ -85,18 +119,67 @@ export default function FAQ() {
         </div>
 
         <div className="mt-12 text-center">
-          <div className="bg-gradient-to-r from-coffee/20 to-dark-secondary/50 p-8 rounded-lg">
-            <h2 className="text-2xl font-bold text-cream mb-4">{t('stillHaveQuestions')}</h2>
-            <p className="text-cream-dark mb-6">{t('stillHaveQuestionsDesc')}</p>
+          <div className="bg-white shadow-md border border-gray-200 p-8 rounded-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('stillHaveQuestions')}</h2>
+            <p className="text-gray-600 mb-6">{t('stillHaveQuestionsDesc')}</p>
             <a 
               href="/contact" 
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-accent-orange to-yellow-500 text-white rounded-lg hover:from-accent-orange/90 hover:to-yellow-500/90 transition-all duration-300 font-semibold"
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-500 hover:to-green-500 transition-all duration-300 font-semibold"
             >
               {t('contactUs')}
             </a>
           </div>
         </div>
       </div>
+      
+      {/* Footer */}
+      <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <Video className="text-white text-xl" />
+                <span className="text-xl font-bold text-white">{t('brand')}</span>
+              </div>
+              <p className="text-gray-300">{t('footerDesc')}</p>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4 text-white">{t('company')}</h4>
+              <ul className="space-y-2 text-gray-300">
+                <li><a href="/about" className="hover:text-blue-400 transition-colors duration-300">{t('aboutUs')}</a></li>
+                <li><a href="/contact" className="hover:text-blue-400 transition-colors duration-300">{t('contact')}</a></li>
+                <li><a href="/privacy-policy" className="hover:text-blue-400 transition-colors duration-300">{t('privacyPolicy')}</a></li>
+                <li><a href="/terms-of-service" className="hover:text-blue-400 transition-colors duration-300">{t('termsOfService')}</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4 text-white">{t('tools')}</h4>
+              <ul className="space-y-2 text-gray-300">
+                <li><a href="/" className="hover:text-blue-400 transition-colors duration-300">TikTok Video Downloader</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">Instagram Downloader</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">YouTube Downloader</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">Twitter Video Downloader</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">Snapchat Downloader</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4 text-white">{t('legal')}</h4>
+              <ul className="space-y-2 text-gray-300">
+                <li><a href="/faq" className="hover:text-blue-400 transition-colors duration-300">{t('faq')}</a></li>
+                <li><a href="/terms-of-service" className="hover:text-blue-400 transition-colors duration-300">{t('termsOfService')}</a></li>
+                <li><a href="/privacy-policy" className="hover:text-blue-400 transition-colors duration-300">{t('privacyPolicy')}</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-700 mt-12 pt-8 text-center text-gray-300">
+            <p>&copy; 2025 {t('brand')}. All rights reserved. | Not affiliated with TikTok or ByteDance Ltd.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
