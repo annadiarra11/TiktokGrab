@@ -77,10 +77,8 @@ export default function Home() {
           title: data.title || 'TikTok Video'
         });
         setShowDownloadOptions(true);
-        // Add 2-second delay before showing the second download options
-        setTimeout(() => {
-          setShowDelayedOptions(true);
-        }, 2000);
+        // Immediately show the final download options (skip intermediate screen)
+        setShowDelayedOptions(true);
       } else {
         throw new Error(data.error || t('downloadError'));
       }
@@ -306,42 +304,24 @@ export default function Home() {
                         <h3 className="text-xl font-semibold text-gray-800 mb-4">
                           {videoData?.title || t('videoReady')}
                         </h3>
-                        {/* Show download options based on user choice */}
-                        {!showDelayedOptions ? (
-                          <div className="flex justify-center md:justify-start">
-                            <Button 
-                              onClick={() => {
-                                toast({
-                                  title: t('pleaseWait'),
-                                  description: t('downloadOptionsWillAppear'),
-                                });
-                              }}
-                              className={`${downloadType === 'video' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-3 rounded-lg font-semibold animate-pulse`}
-                              disabled
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              {downloadType === 'video' ? t('downloadVideo') : t('downloadAudio')}
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-                            <Button 
-                              onClick={() => handleDownload(downloadType)}
-                              className={`${downloadType === 'video' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-3 rounded-lg font-semibold`}
-                              data-testid={`button-download-${downloadType}-final`}
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              {downloadType === 'video' ? t('downloadVideo') : t('downloadAudio')}
-                            </Button>
-                            <Button 
-                              onClick={() => handleDownloadOtherVideos()}
-                              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold"
-                              data-testid="button-download-other-videos"
-                            >
-                              {downloadType === 'video' ? t('downloadOtherVideos') : t('downloadOtherAudios')}
-                            </Button>
-                          </div>
-                        )}
+                        {/* Show final download options directly */}
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                          <Button 
+                            onClick={() => handleDownload(downloadType)}
+                            className={`${downloadType === 'video' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-3 rounded-lg font-semibold`}
+                            data-testid={`button-download-${downloadType}-final`}
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            {downloadType === 'video' ? t('downloadVideo') : t('downloadAudio')}
+                          </Button>
+                          <Button 
+                            onClick={() => handleDownloadOtherVideos()}
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold"
+                            data-testid="button-download-other-videos"
+                          >
+                            {downloadType === 'video' ? t('downloadOtherVideos') : t('downloadOtherAudios')}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
