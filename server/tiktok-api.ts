@@ -1,7 +1,10 @@
-import { Downloader } from "@tobyg74/tiktok-api-dl";
 import fetch from "node-fetch";
 import fs from "fs";
 import path from "path";
+import { execFile } from "child_process";
+import { promisify } from "util";
+
+const execFileAsync = promisify(execFile);
 
 export interface TikTokVideoResult {
   success: boolean;
@@ -20,135 +23,265 @@ export interface TikTokVideoResult {
 
 export class TikTokAPI {
   /**
-   * Extract video information from TikTok URL
+   * Primary method using yt-dlp (most reliable)
    */
-  static async extractVideoInfo(url: string): Promise<TikTokVideoResult> {
+  static async extractVideoInfoWithYtdlp(url: string): Promise<TikTokVideoResult> {
     try {
-      console.log(`[TikTok API] Extracting video info from: ${url}`);
+      console.log(`[TikTok API] Extracting with yt-dlp: ${url}`);
 
-      // Use the TikTok downloader library
-      const result = await Downloader(url, {
-        version: "v3",
+      // Get video info using yt-dlp
+      const { stdout: infoOutput } = await execFileAsync('yt-dlp', [
+        '--dump-json',
+        '--no-playlist',
+        url
+      ]);
+
+      const videoInfo = JSON.parse(infoOutput.trim());
+      console.log(`[TikTok API] yt-dlp extracted info:`, {
+        title: videoInfo.title,
+        uploader: videoInfo.uploader,
+        thumbnail: videoInfo.thumbnail,
+        duration: videoInfo.duration
       });
 
-      if (!result || result.status !== "success") {
-        throw new Error(`TikTok API error: ${result?.message || "Unknown error"}`);
-      }
+      // Get the best available formats
+      const formats = videoInfo.formats || [];
+      const videoFormats = formats.filter((f: any) => f.ext === 'mp4' && f.vcodec !== 'none');
+      const audioFormats = formats.filter((f: any) => f.acodec !== 'none' && f.vcodec === 'none');
 
-      const data = result.result as any;
-      console.log(`[TikTok API] Raw result:`, JSON.stringify(data, null, 2));
+      // Find best quality video (no watermark)
+      const bestVideo = videoFormats.reduce((best: any, current: any) => {
+        if (!best) return current;
+        if (current.height > best.height) return current;
+        if (current.height === best.height && current.filesize > best.filesize) return current;
+        return best;
+      }, null);
 
-      // Extract video information
-      const videoInfo: TikTokVideoResult = {
+      // Find best audio
+      const bestAudio = audioFormats.reduce((best: any, current: any) => {
+        if (!best) return current;
+        if (current.abr > best.abr) return current;
+        return best;
+      }, null);
+
+      return {
         success: true,
-        title: data?.desc || data?.title || "TikTok Video",
-        author: `@${data?.author?.unique_id || data?.author?.nickname || "unknown"}`,
-        thumbnail: this.extractThumbnail(data),
-        duration: data?.duration,
+        title: videoInfo.title || "TikTok Video",
+        author: `@${videoInfo.uploader || videoInfo.channel || "unknown"}`,
+        thumbnail: videoInfo.thumbnail,
+        duration: videoInfo.duration,
         downloads: {
-          hd: data?.videoHD || data?.hdplay,
-          sd: data?.videoSD || data?.play || data?.wmplay,
-          noWatermark: data?.videoHD || data?.hdplay || data?.play,
-          audio: data?.music?.[0]?.url || data?.music
+          hd: bestVideo?.url,
+          sd: bestVideo?.url, // Same as HD for yt-dlp
+          noWatermark: bestVideo?.url,
+          audio: bestAudio?.url
         },
         originalUrl: url,
       };
 
-      // Validate that we have at least one download option
-      if (!videoInfo.downloads.hd && !videoInfo.downloads.sd && !videoInfo.downloads.noWatermark) {
-        throw new Error("No valid download links found");
-      }
-
-      console.log(`[TikTok API] Extracted video info:`, videoInfo);
-      return videoInfo;
-
     } catch (error: any) {
-      console.error(`[TikTok API] Extraction failed:`, error);
-      throw new Error(`Failed to extract video: ${error?.message || "Unknown error"}`);
+      console.error(`[TikTok API] yt-dlp extraction failed:`, error);
+      throw new Error(`yt-dlp extraction failed: ${error?.message || "Unknown error"}`);
     }
   }
 
   /**
-   * Extract thumbnail from video data
+   * Fallback method using tikwm.com API
    */
-  private static extractThumbnail(data: any): string | undefined {
-    const thumbnailCandidates = [
-      data?.cover,
-      data?.origin_cover,
-      data?.dynamic_cover,
-      data?.static_cover,
-      data?.ai_dynamic_cover,
-      data?.author?.avatar
-    ];
-
-    for (const candidate of thumbnailCandidates) {
-      if (candidate && typeof candidate === 'string') {
-        console.log(`[TikTok API] Using thumbnail:`, candidate);
-        return candidate;
-      }
-    }
-
-    console.log(`[TikTok API] No thumbnail found`);
-    return undefined;
-  }
-
-  /**
-   * Download video file and return as buffer
-   */
-  static async downloadVideoAsBuffer(downloadUrl: string): Promise<Buffer> {
+  static async extractVideoInfoWithTikwm(url: string): Promise<TikTokVideoResult> {
     try {
-      console.log(`[TikTok API] Downloading video as buffer from: ${downloadUrl}`);
+      console.log(`[TikTok API] Extracting with tikwm.com: ${url}`);
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
-
-      const response = await fetch(downloadUrl, {
-        redirect: "follow",
+      const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
+      const response = await fetch(apiUrl, {
         headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0 Safari/537.36",
-          "Referer": "https://www.tiktok.com/",
-          "Accept": "video/mp4,application/octet-stream,*/*",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "Referer": "https://www.tikwm.com/",
         },
-        signal: controller.signal,
       });
 
-      clearTimeout(timeoutId);
-
       if (!response.ok) {
-        throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+        throw new Error(`tikwm.com API error: ${response.status}`);
       }
 
-      const buffer = Buffer.from(await response.arrayBuffer());
-      console.log(`[TikTok API] Downloaded ${buffer.length} bytes`);
+      const data = await response.json() as any;
 
-      return buffer;
+      if (data.code !== 0) {
+        throw new Error(`tikwm.com error: ${data.msg}`);
+      }
+
+      console.log(`[TikTok API] tikwm.com extracted info:`, {
+        title: data.data.title,
+        author: data.data.author?.nickname,
+        thumbnail: data.data.cover
+      });
+
+      return {
+        success: true,
+        title: data.data.title || "TikTok Video",
+        author: `@${data.data.author?.nickname || data.data.author?.unique_id || "unknown"}`,
+        thumbnail: data.data.cover || data.data.origin_cover || data.data.dynamic_cover,
+        duration: data.data.duration,
+        downloads: {
+          hd: data.data.hdplay || data.data.play,
+          sd: data.data.play,
+          noWatermark: data.data.hdplay || data.data.play,
+          audio: data.data.music
+        },
+        originalUrl: url,
+      };
+
     } catch (error: any) {
-      console.error(`[TikTok API] Download error:`, error);
-      throw new Error(`Download failed: ${error?.message || "Unknown error"}`);
+      console.error(`[TikTok API] tikwm.com extraction failed:`, error);
+      throw new Error(`tikwm.com extraction failed: ${error?.message || "Unknown error"}`);
     }
   }
 
   /**
-   * Stream video file directly to HTTP response (efficient for large files)
+   * Third fallback using ssstik.io API
+   */
+  static async extractVideoInfoWithSsstik(url: string): Promise<TikTokVideoResult> {
+    try {
+      console.log(`[TikTok API] Extracting with ssstik.io: ${url}`);
+
+      const response = await fetch('https://ssstik.io/abc?url=dl', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Referer': 'https://ssstik.io/',
+        },
+        body: `id=${encodeURIComponent(url)}&locale=en&tt=1`
+      });
+
+      if (!response.ok) {
+        throw new Error(`ssstik.io API error: ${response.status}`);
+      }
+
+      const html = await response.text();
+      
+      // Parse HTML response to extract video info
+      const titleMatch = html.match(/<p class="maintext"[^>]*>([^<]+)</);
+      const authorMatch = html.match(/<h2>([^<]+)</);
+      const videoMatch = html.match(/href="([^"]+)"[^>]*>Download MP4/);
+      const thumbnailMatch = html.match(/<img[^>]+src="([^"]+)"[^>]*class="result-image"/);
+
+      if (!videoMatch) {
+        throw new Error("No video download link found in ssstik.io response");
+      }
+
+      return {
+        success: true,
+        title: titleMatch?.[1]?.trim() || "TikTok Video",
+        author: authorMatch?.[1]?.trim() || "@unknown",
+        thumbnail: thumbnailMatch?.[1],
+        duration: undefined,
+        downloads: {
+          hd: videoMatch[1],
+          sd: videoMatch[1],
+          noWatermark: videoMatch[1],
+          audio: undefined
+        },
+        originalUrl: url,
+      };
+
+    } catch (error: any) {
+      console.error(`[TikTok API] ssstik.io extraction failed:`, error);
+      throw new Error(`ssstik.io extraction failed: ${error?.message || "Unknown error"}`);
+    }
+  }
+
+  /**
+   * Main extraction method with multiple fallbacks
+   */
+  static async extractVideoInfo(url: string): Promise<TikTokVideoResult> {
+    const methods = [
+      { name: 'yt-dlp', method: this.extractVideoInfoWithYtdlp },
+      { name: 'tikwm.com', method: this.extractVideoInfoWithTikwm },
+      { name: 'ssstik.io', method: this.extractVideoInfoWithSsstik }
+    ];
+
+    let lastError: Error | null = null;
+
+    for (const { name, method } of methods) {
+      try {
+        console.log(`[TikTok API] Trying ${name}...`);
+        const result = await method.call(this, url);
+        
+        // Validate that we have at least one download option
+        if (!result.downloads.hd && !result.downloads.sd && !result.downloads.noWatermark) {
+          throw new Error("No valid download links found");
+        }
+
+        console.log(`[TikTok API] Successfully extracted with ${name}`);
+        return result;
+
+      } catch (error: any) {
+        console.log(`[TikTok API] ${name} failed, trying next method...`);
+        lastError = error;
+        continue;
+      }
+    }
+
+    // If all methods failed
+    throw new Error(`All extraction methods failed. Last error: ${lastError?.message || "Unknown error"}`);
+  }
+
+  /**
+   * Download video using yt-dlp (most reliable)
+   */
+  static async downloadVideoWithYtdlp(url: string): Promise<Buffer> {
+    try {
+      console.log(`[TikTok API] Downloading with yt-dlp: ${url}`);
+
+      // Create temp directory
+      const tempDir = '/tmp/tiktok-downloads';
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+
+      // Download video
+      const { stdout } = await execFileAsync('yt-dlp', [
+        '--format', 'best[ext=mp4]',
+        '--output', `${tempDir}/%(title)s.%(ext)s`,
+        '--print', 'after_move:filepath',
+        url
+      ]);
+
+      const filePath = stdout.trim();
+      console.log(`[TikTok API] Downloaded to: ${filePath}`);
+
+      // Read file and return buffer
+      const buffer = fs.readFileSync(filePath);
+      
+      // Clean up file
+      fs.unlinkSync(filePath);
+
+      console.log(`[TikTok API] Downloaded ${buffer.length} bytes`);
+      return buffer;
+
+    } catch (error: any) {
+      console.error(`[TikTok API] yt-dlp download error:`, error);
+      throw new Error(`yt-dlp download failed: ${error?.message || "Unknown error"}`);
+    }
+  }
+
+  /**
+   * Stream video directly to HTTP response
    */
   static async streamVideoToResponse(downloadUrl: string, res: any): Promise<void> {
     try {
       console.log(`[TikTok API] Streaming video from: ${downloadUrl}`);
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
-
       const response = await fetch(downloadUrl, {
         redirect: "follow",
         headers: {
           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0 Safari/537.36",
           "Referer": "https://www.tiktok.com/",
           "Accept": "video/mp4,application/octet-stream,*/*",
+          "Range": "bytes=0-", // Enable range requests for better streaming
         },
-        signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Streaming failed: ${response.status} ${response.statusText}`);
@@ -157,113 +290,138 @@ export class TikTokAPI {
       // Set appropriate headers
       const contentLength = response.headers.get('content-length');
       const contentType = response.headers.get('content-type') || 'video/mp4';
+      const acceptRanges = response.headers.get('accept-ranges');
 
       res.setHeader('Content-Type', contentType);
       if (contentLength) {
         res.setHeader('Content-Length', contentLength);
       }
+      if (acceptRanges) {
+        res.setHeader('Accept-Ranges', acceptRanges);
+      }
       res.setHeader('Content-Disposition', 'attachment; filename="tiktok-video.mp4"');
+      res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
 
       // Check if response body exists
       if (!response.body) {
         throw new Error("No response body to stream");
       }
 
-      // Stream the video using Node.js streams
+      // Set up proper streaming with error handling
       await new Promise<void>((resolve, reject) => {
+        let resolved = false;
+
+        const cleanup = () => {
+          if (!resolved) {
+            resolved = true;
+          }
+        };
+
         response.body!.pipe(res);
         
         response.body!.on("error", (error: any) => {
           console.error('[TikTok API] Stream source error:', error);
-          reject(error);
+          cleanup();
+          if (!resolved) reject(error);
         });
         
         res.on("finish", () => {
           console.log('[TikTok API] Stream completed successfully');
-          resolve();
+          cleanup();
+          if (!resolved) resolve();
         });
         
         res.on("error", (error: any) => {
           console.error('[TikTok API] Stream destination error:', error);
-          reject(error);
+          cleanup();
+          if (!resolved) reject(error);
         });
 
-        // Handle client disconnect
         res.on("close", () => {
           console.log('[TikTok API] Client disconnected during stream');
-          // Note: response.body is a ReadableStream, no destroy method needed
+          cleanup();
+          if (!resolved) resolve(); // Don't treat disconnect as error
         });
+
+        // Timeout after 5 minutes
+        setTimeout(() => {
+          if (!resolved) {
+            console.log('[TikTok API] Stream timeout after 5 minutes');
+            cleanup();
+            reject(new Error('Stream timeout'));
+          }
+        }, 5 * 60 * 1000);
       });
 
     } catch (error: any) {
       console.error(`[TikTok API] Streaming error:`, error);
       
-      // Only send error response if headers haven't been sent yet
       if (!res.headersSent) {
         res.status(500).json({
           success: false,
           message: `Streaming failed: ${error?.message || "Unknown error"}`,
         });
-      } else {
-        // If headers were already sent, just end the response
-        res.end();
       }
     }
   }
 
   /**
-   * Download and save video to file system
+   * Download and stream using yt-dlp (most reliable for problematic URLs)
    */
-  static async downloadVideoToFile(downloadUrl: string, outputPath: string): Promise<string> {
+  static async streamVideoWithYtdlp(url: string, res: any): Promise<void> {
     try {
-      console.log(`[TikTok API] Downloading video to file: ${outputPath}`);
+      console.log(`[TikTok API] Streaming with yt-dlp: ${url}`);
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      // Set headers
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Content-Disposition', 'attachment; filename="tiktok-video.mp4"');
+      res.setHeader('Cache-Control', 'no-cache');
 
-      const response = await fetch(downloadUrl, {
-        redirect: "follow",
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0 Safari/537.36",
-          "Referer": "https://www.tiktok.com/",
-          "Accept": "video/mp4,application/octet-stream,*/*",
-        },
-        signal: controller.signal,
-      });
+      // Stream directly using yt-dlp
+      const ytdlpProcess = execFile('yt-dlp', [
+        '--format', 'best[ext=mp4]',
+        '--output', '-', // Output to stdout
+        url
+      ]);
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+      if (!ytdlpProcess.stdout) {
+        throw new Error("Failed to start yt-dlp process");
       }
 
-      // Ensure directory exists
-      const dir = path.dirname(outputPath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-
-      // Stream to file
-      const fileStream = fs.createWriteStream(outputPath);
-      
-      if (!response.body) {
-        throw new Error("No response body to save");
-      }
+      // Pipe yt-dlp output directly to response
+      ytdlpProcess.stdout.pipe(res);
 
       await new Promise<void>((resolve, reject) => {
-        response.body!.pipe(fileStream);
-        
-        response.body!.on("error", reject);
-        fileStream.on("finish", resolve);
-        fileStream.on("error", reject);
+        ytdlpProcess.on('close', (code) => {
+          if (code === 0) {
+            console.log('[TikTok API] yt-dlp streaming completed successfully');
+            resolve();
+          } else {
+            reject(new Error(`yt-dlp process exited with code ${code}`));
+          }
+        });
+
+        ytdlpProcess.on('error', (error) => {
+          console.error('[TikTok API] yt-dlp process error:', error);
+          reject(error);
+        });
+
+        res.on('close', () => {
+          console.log('[TikTok API] Client disconnected, killing yt-dlp process');
+          ytdlpProcess.kill();
+          resolve();
+        });
       });
 
-      console.log(`[TikTok API] Video saved to: ${outputPath}`);
-      return outputPath;
-
     } catch (error: any) {
-      console.error(`[TikTok API] File download error:`, error);
-      throw new Error(`File download failed: ${error?.message || "Unknown error"}`);
+      console.error(`[TikTok API] yt-dlp streaming error:`, error);
+      
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: `yt-dlp streaming failed: ${error?.message || "Unknown error"}`,
+        });
+      }
     }
   }
 
