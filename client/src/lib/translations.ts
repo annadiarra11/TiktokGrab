@@ -44,6 +44,7 @@ export const translations = {
     downloadButton: 'Download Video',
     processing: 'Processing...',
     processingVideo: 'Processing your video...',
+    preparingDownload: 'Preparing download...',
     
     // Features
     lightningFast: 'Lightning Fast',
@@ -284,6 +285,7 @@ export const translations = {
     downloadButton: 'Descargar Video',
     processing: 'Procesando...',
     processingVideo: 'Procesando tu video...',
+    preparingDownload: 'Preparando descarga...',
     
     // Features
     lightningFast: 'Súper Rápido',
@@ -524,6 +526,7 @@ export const translations = {
     downloadButton: 'Télécharger la Vidéo',
     processing: 'Traitement...',
     processingVideo: 'Traitement de votre vidéo...',
+    preparingDownload: 'Préparation du téléchargement...',
     
     // Features
     lightningFast: 'Ultra Rapide',
@@ -764,6 +767,7 @@ export const translations = {
     downloadButton: 'Video Herunterladen',
     processing: 'Verarbeitung...',
     processingVideo: 'Verarbeite dein Video...',
+    preparingDownload: 'Download wird vorbereitet...',
     
     // Features
     lightningFast: 'Blitzschnell',
@@ -1004,6 +1008,7 @@ export const translations = {
     downloadButton: 'Baixar Vídeo',
     processing: 'Processando...',
     processingVideo: 'Processando seu vídeo...',
+    preparingDownload: 'Preparando download...',
     
     // Features
     lightningFast: 'Super Rápido',
@@ -1244,6 +1249,7 @@ export const translations = {
     downloadButton: 'تحميل الفيديو',
     processing: 'جاري المعالجة...',
     processingVideo: 'جاري معالجة الفيديو...',
+    preparingDownload: 'جاري تحضير التحميل...',
     
     // Features
     lightningFast: 'سريع البرق',
@@ -1484,6 +1490,7 @@ export const translations = {
     downloadButton: '下载视频',
     processing: '处理中...',
     processingVideo: '正在处理您的视频...',
+    preparingDownload: '正在准备下载...',
     
     // Features
     lightningFast: '闪电般快速',
@@ -1724,6 +1731,7 @@ export const translations = {
     downloadButton: 'Scarica Video',
     processing: 'Elaborazione...',
     processingVideo: 'Elaborando il tuo video...',
+    preparingDownload: 'Preparazione download...',
     
     // Features
     lightningFast: 'Veloce come un Fulmine',
@@ -1964,6 +1972,7 @@ export const translations = {
     downloadButton: '動画をダウンロード',
     processing: '処理中...',
     processingVideo: '動画を処理中...',
+    preparingDownload: 'ダウンロード準備中...',
     
     // Features
     lightningFast: '超高速',
@@ -2204,6 +2213,7 @@ export const translations = {
     downloadButton: '동영상 다운로드',
     processing: '처리 중...',
     processingVideo: '동영상 처리 중...',
+    preparingDownload: '다운로드 준비 중...',
     
     // Features
     lightningFast: '번개처럼 빠름',
@@ -2444,6 +2454,7 @@ export const translations = {
     downloadButton: 'Скачать видео',
     processing: 'Обработка...',
     processingVideo: 'Обрабатываем ваше видео...',
+    preparingDownload: 'Подготовка загрузки...',
     
     // Features
     lightningFast: 'Молниеносно быстро',
@@ -2684,6 +2695,7 @@ export const translations = {
     downloadButton: 'वीडियो डाउनलोड करें',
     processing: 'प्रसंस्करण...',
     processingVideo: 'आपका वीडियो प्रोसेस हो रहा है...',
+    preparingDownload: 'डाउनलोड तैयार हो रहा है...',
     
     // Features
     lightningFast: 'तेज़ी से',
@@ -2924,6 +2936,7 @@ export const translations = {
     downloadButton: 'Video İndir',
     processing: 'İşleniyor...',
     processingVideo: 'Videonuz işleniyor...',
+    preparingDownload: 'İndirme hazırlanıyor...',
     
     // Features
     lightningFast: 'Yıldırım Hızı',
@@ -3164,6 +3177,7 @@ export const translations = {
     downloadButton: 'Video Downloaden',
     processing: 'Verwerken...',
     processingVideo: 'Je video wordt verwerkt...',
+    preparingDownload: 'Download voorbereiden...',
     
     // Features
     lightningFast: 'Bliksemssnel',
@@ -3404,6 +3418,7 @@ export const translations = {
     downloadButton: 'Ladda ner video',
     processing: 'Bearbetar...',
     processingVideo: 'Bearbetar din video...',
+    preparingDownload: 'Förbereder nedladdning...',
     
     // Features
     lightningFast: 'Blixtsnabbt',
@@ -3644,6 +3659,7 @@ export const translations = {
     downloadButton: 'Tải video',
     processing: 'Đang xử lý...',
     processingVideo: 'Đang xử lý video của bạn...',
+    preparingDownload: 'Đang chuẩn bị tải xuống...',
     
     // Features
     lightningFast: 'Cực nhanh',
@@ -3884,6 +3900,7 @@ export const translations = {
     downloadButton: 'Unduh Video',
     processing: 'Memproses...',
     processingVideo: 'Memproses video Anda...',
+    preparingDownload: 'Menyiapkan unduhan...',
     
     // Features
     lightningFast: 'Secepat Kilat',

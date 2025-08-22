@@ -51,6 +51,7 @@ export default function Home() {
   const [videoData, setVideoData] = useState<any>(null);
   const [showDelayedOptions, setShowDelayedOptions] = useState(false);
   const [downloadType, setDownloadType] = useState<'video' | 'audio'>('video');
+  const [downloadingFile, setDownloadingFile] = useState(false);
   const { toast } = useToast();
   const { currentLanguage, setLanguage } = useLanguage();
   const { t } = useTranslation(currentLanguage);
@@ -132,6 +133,9 @@ export default function Home() {
         return;
       }
 
+      // Set loading state
+      setDownloadingFile(true);
+
       // Get the actual download URL from the server
       const response = await fetch(`/api/download/${videoData.requestId}/${type}`);
       
@@ -163,6 +167,9 @@ export default function Home() {
         description: `Failed to download ${type}. Please try again.`,
         variant: "destructive",
       });
+    } finally {
+      // Clear loading state
+      setDownloadingFile(false);
     }
   };
 
@@ -308,15 +315,21 @@ export default function Home() {
                         <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                           <Button 
                             onClick={() => handleDownload(downloadType)}
-                            className={`${downloadType === 'video' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-3 rounded-lg font-semibold`}
+                            disabled={downloadingFile}
+                            className={`${downloadType === 'video' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-3 rounded-lg font-semibold disabled:opacity-50`}
                             data-testid={`button-download-${downloadType}-final`}
                           >
-                            <Download className="mr-2 h-4 w-4" />
-                            {downloadType === 'video' ? t('downloadVideo') : t('downloadAudio')}
+                            {downloadingFile ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <Download className="mr-2 h-4 w-4" />
+                            )}
+                            {downloadingFile ? t('preparingDownload') : (downloadType === 'video' ? t('downloadVideo') : t('downloadAudio'))}
                           </Button>
                           <Button 
                             onClick={() => handleDownloadOtherVideos()}
-                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold"
+                            disabled={downloadingFile}
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold disabled:opacity-50"
                             data-testid="button-download-other-videos"
                           >
                             {downloadType === 'video' ? t('downloadOtherVideos') : t('downloadOtherAudios')}
