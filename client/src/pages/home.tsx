@@ -187,8 +187,7 @@ export default function Home() {
     setVideoData(null);
     setDownloadType('video');
     form.reset();
-    // Refresh the page to return to main state
-    window.location.reload();
+    // Return to main state without refreshing - same transition as initial download
   };
 
   return (
@@ -294,8 +293,8 @@ export default function Home() {
                   <div className="text-center">
                     <div className="flex flex-col md:flex-row items-center gap-6">
                       {/* Video Thumbnail */}
-                      <div className="w-48 h-32 bg-gradient-to-br from-coffee to-dark-secondary rounded-lg overflow-hidden">
-                        {videoData?.thumbnail && videoData.thumbnail !== 'https://via.placeholder.com/300x200?text=TikTok+Video' ? (
+                      <div className="w-48 h-32 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg overflow-hidden shadow-md">
+                        {videoData?.thumbnail ? (
                           <img 
                             src={videoData.thumbnail} 
                             alt="TikTok Video Thumbnail" 
@@ -306,18 +305,18 @@ export default function Home() {
                               target.style.display = 'none';
                               const parent = target.parentElement;
                               if (parent) {
-                                parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="w-12 h-12 text-accent-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="9,18 15,12 9,6"></polygon></svg></div>';
+                                parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="9,18 15,12 9,6"></polygon></svg></div>';
                               }
                             }}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Play className="w-12 h-12 text-accent-orange" />
+                            <Play className="w-12 h-12 text-white" />
                           </div>
                         )}
                       </div>
                       <div className="flex-1 text-center md:text-left">
-                        <h3 className="text-xl font-semibold text-cream mb-4">
+                        <h3 className="text-xl font-semibold text-gray-800 mb-4">
                           {videoData?.title || 'TikTok Video Ready'}
                         </h3>
                         {/* Show download options based on user choice */}
@@ -364,9 +363,9 @@ export default function Home() {
                 {/* Loading State */}
                 {downloadMutation.isPending && (
                   <div className="mt-6 text-center animate-pulse-slow">
-                    <div className="text-accent-orange mb-2">
+                    <div className="text-blue-600 mb-2">
                       <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                      <p className="text-cream-dark">{t('processingVideo')}</p>
+                      <p className="text-gray-600">{t('processingVideo')}</p>
                     </div>
                   </div>
                 )}
@@ -374,8 +373,8 @@ export default function Home() {
                 {/* Progress Bar */}
                 {downloadProgress > 0 && downloadProgress < 100 && (
                   <div className="mt-6">
-                    <Progress value={downloadProgress} className="h-2 bg-coffee" />
-                    <p className="text-center text-cream-dark mt-2">
+                    <Progress value={downloadProgress} className="h-2 bg-gray-200" />
+                    <p className="text-center text-gray-600 mt-2">
                       {t('downloadProgress')} {downloadProgress}%
                     </p>
                   </div>
