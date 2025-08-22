@@ -265,7 +265,7 @@ export class TikTokAPI {
     }
   }
 
-  // New streaming method for fast downloads
+  // Proper streaming method for fast downloads
   static async streamFile(downloadUrl: string, res: any): Promise<void> {
     try {
       console.log(`[TikTok API] Streaming file from: ${downloadUrl}`);
@@ -290,11 +290,35 @@ export class TikTokAPI {
         res.setHeader('Content-Length', response.headers.get('content-length'));
       }
 
-      // Stream the response directly to the client using Node.js readable stream
-      if (response.body && response.body instanceof ReadableStream) {
-        // Convert Web ReadableStream to Node.js readable stream
-        const nodeReadable = response.body as any;
-        nodeReadable.pipe(res);
+      // Use the proper way to stream in Node.js with fetch
+      if (response.body) {
+        // Handle the Web ReadableStream properly with type assertion
+        const reader = (response.body as any).getReader();
+        
+        const pump = async (): Promise<void> => {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              
+              // Write chunks as they come in
+              if (!res.write(Buffer.from(value))) {
+                // If write buffer is full, wait for drain
+                await new Promise(resolve => res.once('drain', resolve));
+              }
+            }
+            res.end();
+          } catch (error) {
+            console.error('[TikTok API] Streaming error:', error);
+            if (!res.headersSent) {
+              res.status(500).end();
+            }
+          } finally {
+            reader.releaseLock();
+          }
+        };
+
+        await pump();
       } else {
         // Fallback: read as buffer and send
         const buffer = Buffer.from(await response.arrayBuffer());
