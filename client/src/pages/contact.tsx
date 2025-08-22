@@ -13,7 +13,7 @@ export default function Contact() {
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('selectedLanguage') as Language;
-    if (savedLanguage && ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ja', 'ko', 'ar'].includes(savedLanguage)) {
+    if (savedLanguage && ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ja', 'ko', 'ar', 'it', 'ru', 'hi', 'tr', 'nl', 'sv', 'pl', 'th', 'vi', 'id', 'ms'].includes(savedLanguage)) {
       setCurrentLanguage(savedLanguage);
     }
   }, []);
@@ -39,7 +39,7 @@ export default function Contact() {
               <span className="text-2xl font-bold text-white">{t('brand')}</span>
             </div>
             <div className="flex items-center space-x-6">
-              <a href="/" className="text-white hover:text-blue-200 transition-colors">Home</a>
+              <a href="/" className="text-white hover:text-blue-200 transition-colors">{t('home')}</a>
               <LanguageSelector 
                 currentLanguage={currentLanguage} 
                 onLanguageChange={handleLanguageChange} 
@@ -203,11 +203,11 @@ export default function Contact() {
             <div>
               <h4 className="font-semibold mb-4 text-white">{t('tools')}</h4>
               <ul className="space-y-2 text-gray-300">
-                <li><a href="/" className="hover:text-blue-400 transition-colors duration-300">TikTok Video Downloader</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">Instagram Downloader</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">YouTube Downloader</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">Twitter Video Downloader</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">Snapchat Downloader</a></li>
+                <li><a href="/" className="hover:text-blue-400 transition-colors duration-300">{t('tikTokVideoDownloader')}</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">{t('instagramDownloader')}</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">{t('youTubeDownloader')}</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">{t('twitterVideoDownloader')}</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">{t('snapchatDownloader')}</a></li>
               </ul>
             </div>
             
@@ -222,7 +222,7 @@ export default function Contact() {
           </div>
           
           <div className="border-t border-gray-700 mt-12 pt-8 text-center text-gray-300">
-            <p>&copy; 2025 {t('brand')}. All rights reserved. | Not affiliated with TikTok or ByteDance Ltd.</p>
+            <p>&copy; 2025 {t('brand')}. {t('allRightsReserved')} | {t('notAffiliatedDisclaimer')}</p>
           </div>
         </div>
       </footer>

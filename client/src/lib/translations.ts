@@ -29,6 +29,7 @@ export const translations = {
   en: {
     // Header
     brand: 'TikDownloader',
+    home: 'Home',
     features: 'Features',
     faq: 'FAQ',
     contact: 'Contact',
@@ -246,6 +247,15 @@ export const translations = {
     cookiePolicy: 'Cookie Policy',
     dmca: 'DMCA',
     
+    // Tool names
+    tikTokVideoDownloader: 'TikTok Video Downloader',
+    instagramDownloader: 'Instagram Downloader',
+    youTubeDownloader: 'YouTube Downloader',
+    twitterVideoDownloader: 'Twitter Video Downloader',
+    snapchatDownloader: 'Snapchat Downloader',
+    allRightsReserved: 'All rights reserved.',
+    notAffiliatedDisclaimer: 'Not affiliated with TikTok or ByteDance Ltd.',
+    
     // Toast messages
     successTitle: 'Success!',
     successDesc: 'Video downloaded successfully',
@@ -264,6 +274,7 @@ export const translations = {
   es: {
     // Header
     brand: 'TikDownloader',
+    home: 'Inicio',
     features: 'Características',
     faq: 'Preguntas Frecuentes',
     contact: 'Contacto',
@@ -363,6 +374,15 @@ export const translations = {
     cookiePolicy: 'Política de Cookies',
     dmca: 'DMCA',
     
+    // Tool names
+    tikTokVideoDownloader: 'Descargador de Videos TikTok',
+    instagramDownloader: 'Descargador de Instagram',
+    youTubeDownloader: 'Descargador de YouTube',
+    twitterVideoDownloader: 'Descargador de Videos Twitter',
+    snapchatDownloader: 'Descargador de Snapchat',
+    allRightsReserved: 'Todos los derechos reservados.',
+    notAffiliatedDisclaimer: 'No afiliado con TikTok o ByteDance Ltd.',
+    
     // Toast messages
     successTitle: '¡Éxito!',
     successDesc: 'Video descargado exitosamente',
@@ -381,6 +401,7 @@ export const translations = {
   fr: {
     // Header
     brand: 'TikDownloader',
+    home: 'Accueil',
     features: 'Fonctionnalités',
     faq: 'FAQ',
     contact: 'Contact',
