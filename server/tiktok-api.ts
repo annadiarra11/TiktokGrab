@@ -197,15 +197,13 @@ export class TikTokAPI {
       console.log(`[TikTok API] Streaming audio with yt-dlp: ${url}`);
 
       // Set headers first
-      res.setHeader('Content-Type', 'audio/mpeg');
-      res.setHeader('Content-Disposition', 'attachment; filename="tiktok-audio.mp3"');
+      res.setHeader('Content-Type', 'audio/mp4');
+      res.setHeader('Content-Disposition', 'attachment; filename="tiktok-audio.m4a"');
       res.setHeader('Cache-Control', 'no-cache');
 
-      // Use spawn for audio extraction
+      // Use spawn for audio-only format (no video)
       const ytdlpProcess = spawn('yt-dlp', [
-        '--extract-audio',
-        '--audio-format', 'mp3',
-        '--audio-quality', '192K',
+        '--format', 'bestaudio[ext=m4a]/bestaudio',
         '--output', '-',
         '--no-warnings',
         url
