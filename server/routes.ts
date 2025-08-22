@@ -41,7 +41,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Extract real TikTok video data using professional API
       try {
-        const videoData = await TikTokAPI.extractAndDownload(url);
+        const videoData = await TikTokAPI.extractVideoInfo(url);
         
         // Store the extracted video data for later download
         await storage.updateDownloadRequest(downloadRequest.id, {
@@ -165,7 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Cache-Control', 'no-cache');
         
         // Stream the video file directly (much faster than buffering)
-        await TikTokAPI.streamFile(videoUrl, res);
+        await TikTokAPI.streamVideoToResponse(videoUrl, res);
         
       } catch (downloadError: any) {
         console.error('Video download error:', downloadError);
@@ -234,7 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Cache-Control', 'no-cache');
         
         // Stream the audio file directly (much faster than buffering)
-        await TikTokAPI.streamFile(audioUrl, res);
+        await TikTokAPI.streamVideoToResponse(audioUrl, res);
         
       } catch (downloadError: any) {
         console.error('Audio download error:', downloadError);
