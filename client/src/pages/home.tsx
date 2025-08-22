@@ -50,6 +50,7 @@ export default function Home() {
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [videoData, setVideoData] = useState<any>(null);
   const [showDelayedOptions, setShowDelayedOptions] = useState(false);
+  const [downloadType, setDownloadType] = useState<'video' | 'audio'>('video');
   const { toast } = useToast();
   const { t } = useTranslation(currentLanguage);
 
@@ -109,6 +110,12 @@ export default function Home() {
   const onSubmit = (data: DownloadForm) => {
     downloadMutation.mutate(data);
   };
+  
+  const handleDownloadWithType = (type: 'video' | 'audio') => {
+    setDownloadType(type);
+    const formData = form.getValues();
+    downloadMutation.mutate(formData);
+  };
 
   const handlePasteFromClipboard = async () => {
     try {
@@ -123,6 +130,10 @@ export default function Home() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleClearInput = () => {
+    form.setValue("url", "");
   };
 
   const handleDownload = async (type: 'video' | 'audio') => {
@@ -174,61 +185,23 @@ export default function Home() {
     setShowDownloadOptions(false);
     setShowDelayedOptions(false);
     setVideoData(null);
+    setDownloadType('video');
     form.reset();
-    // Redirect to home page
-    window.location.href = '/';
+    // Refresh the page to return to main state
+    window.location.reload();
   };
 
   return (
-    <div className="min-h-screen gradient-bg font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-inter">
       {/* Header */}
-      <header className="py-6 px-4 sm:px-6 lg:px-8">
+      <header className="bg-blue-600 py-6 px-4 sm:px-6 lg:px-8 shadow-md">
         <div className="max-w-7xl mx-auto">
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Video className="text-accent-orange text-2xl" />
-              <span className="text-2xl font-bold text-cream">{t('brand')}</span>
+              <Video className="text-white text-2xl" />
+              <span className="text-2xl font-bold text-white">{t('brand')}</span>
             </div>
             <div className="flex items-center space-x-6">
-              <div className="hidden md:flex items-center space-x-6">
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="text-cream-dark hover:text-accent-orange transition-colors duration-300 flex items-center space-x-1">
-                    <span>{t('otherDownloaders')}</span>
-                    <ChevronDown className="w-4 h-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-dark-secondary border-coffee">
-                    <DropdownMenuItem className="text-cream hover:bg-coffee/20">
-                      <a href="#" className="flex items-center space-x-2">
-                        <span>Instagram Downloader</span>
-                      </a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-cream hover:bg-coffee/20">
-                      <a href="#" className="flex items-center space-x-2">
-                        <span>YouTube Downloader</span>
-                      </a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-cream hover:bg-coffee/20">
-                      <a href="#" className="flex items-center space-x-2">
-                        <span>Twitter Downloader</span>
-                      </a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-cream hover:bg-coffee/20">
-                      <a href="#" className="flex items-center space-x-2">
-                        <span>Snapchat Downloader</span>
-                      </a>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <a href="/about" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
-                  {t('aboutUs')}
-                </a>
-                <a href="/faq" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
-                  {t('faq')}
-                </a>
-                <a href="/contact" className="text-cream-dark hover:text-accent-orange transition-colors duration-300">
-                  {t('contact')}
-                </a>
-              </div>
               <LanguageSelector 
                 currentLanguage={currentLanguage} 
                 onLanguageChange={handleLanguageChange} 
@@ -240,17 +213,17 @@ export default function Home() {
 
       {/* Hero Section */}
       <main className="flex-1">
-        <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-gradient">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
               {t('title')}
             </h1>
-            <p className="text-xl md:text-2xl text-cream-dark mb-12 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto">
               {t('subtitle')}
             </p>
 
             {/* Download Form */}
-            <Card className="card-gradient rounded-2xl p-8 mb-12 animate-slide-up border-0">
+            <Card className="bg-white shadow-lg rounded-2xl p-8 mb-16 animate-slide-up border border-gray-200">
               <CardContent className="p-0">
                 {!showDownloadOptions ? (
                   <Form {...form}>
@@ -265,7 +238,7 @@ export default function Home() {
                                 <Input
                                   {...field}
                                   placeholder={t('urlPlaceholder')}
-                                  className="input-gradient w-full px-6 py-4 h-auto rounded-xl text-cream placeholder-cream-dark bg-transparent border-0 focus:ring-2 focus:ring-accent-orange transition-all duration-300 pr-20"
+                                  className="w-full px-6 py-4 h-auto rounded-xl text-gray-800 placeholder-gray-500 bg-white border-2 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 pr-20"
                                   data-testid="input-tiktok-url"
                                 />
                               </FormControl>
@@ -276,28 +249,45 @@ export default function Home() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={handlePasteFromClipboard}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-cream-dark hover:text-accent-orange hover:bg-transparent transition-colors duration-300 px-3 py-1 text-sm"
+                          onClick={form.watch("url") ? handleClearInput : handlePasteFromClipboard}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 hover:bg-transparent transition-colors duration-300 px-3 py-1 text-sm"
                           data-testid="button-paste-clipboard"
                         >
                           <Clipboard className="h-4 w-4 mr-1" />
-                          {t('paste')}
+                          {form.watch("url") ? 'Clear' : t('paste')}
                         </Button>
                       </div>
 
-                      <Button
-                        type="submit"
-                        disabled={downloadMutation.isPending}
-                        className="btn-gradient w-full py-4 px-8 rounded-xl text-white font-semibold text-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 border-0"
-                        data-testid="button-download-video"
-                      >
-                        {downloadMutation.isPending ? (
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        ) : (
-                          <Download className="mr-2 h-5 w-5" />
-                        )}
-                        {downloadMutation.isPending ? t('processing') : t('downloadButton')}
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          type="button"
+                          disabled={downloadMutation.isPending}
+                          onClick={() => handleDownloadWithType('video')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white py-4 px-8 rounded-xl font-semibold text-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 border-0 flex-1"
+                          data-testid="button-download-video"
+                        >
+                          {downloadMutation.isPending && downloadType === 'video' ? (
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          ) : (
+                            <Download className="mr-2 h-5 w-5" />
+                          )}
+                          {downloadMutation.isPending && downloadType === 'video' ? t('processing') : 'Download Video'}
+                        </Button>
+                        <Button
+                          type="button"
+                          disabled={downloadMutation.isPending}
+                          onClick={() => handleDownloadWithType('audio')}
+                          className="bg-green-600 hover:bg-green-700 text-white py-4 px-8 rounded-xl font-semibold text-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 border-0 flex-1"
+                          data-testid="button-download-audio"
+                        >
+                          {downloadMutation.isPending && downloadType === 'audio' ? (
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          ) : (
+                            <Download className="mr-2 h-5 w-5" />
+                          )}
+                          {downloadMutation.isPending && downloadType === 'audio' ? t('processing') : 'Download Audio'}
+                        </Button>
+                      </div>
                     </form>
                   </Form>
                 ) : (
@@ -330,7 +320,7 @@ export default function Home() {
                         <h3 className="text-xl font-semibold text-cream mb-4">
                           {videoData?.title || 'TikTok Video Ready'}
                         </h3>
-                        {/* Show first download button immediately */}
+                        {/* Show download options based on user choice */}
                         {!showDelayedOptions ? (
                           <div className="flex justify-center md:justify-start">
                             <Button 
@@ -340,37 +330,29 @@ export default function Home() {
                                   description: 'Download options will appear in a moment',
                                 });
                               }}
-                              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold animate-pulse"
+                              className={`${downloadType === 'video' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-3 rounded-lg font-semibold animate-pulse`}
                               disabled
                             >
                               <Download className="mr-2 h-4 w-4" />
-                              {t('downloadVideo')}
+                              {downloadType === 'video' ? 'Download Video' : 'Download Audio'}
                             </Button>
                           </div>
                         ) : (
                           <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                             <Button 
-                              onClick={() => handleDownload('video')}
-                              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
-                              data-testid="button-download-video-final"
+                              onClick={() => handleDownload(downloadType)}
+                              className={`${downloadType === 'video' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-3 rounded-lg font-semibold`}
+                              data-testid={`button-download-${downloadType}-final`}
                             >
                               <Download className="mr-2 h-4 w-4" />
-                              {t('downloadVideo')}
-                            </Button>
-                            <Button 
-                              onClick={() => handleDownload('audio')}
-                              className="bg-dark-secondary hover:bg-coffee text-cream px-6 py-3 rounded-lg font-semibold border border-cream/20"
-                              data-testid="button-download-audio-final"
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              {t('downloadAudio')}
+                              {downloadType === 'video' ? 'Download Video' : 'Download Audio'}
                             </Button>
                             <Button 
                               onClick={() => handleDownloadOtherVideos()}
-                              className="bg-dark-secondary hover:bg-coffee text-cream px-6 py-3 rounded-lg font-semibold border border-cream/20"
+                              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold"
                               data-testid="button-download-other-videos"
                             >
-                              {t('downloadOtherVideos')}
+                              {downloadType === 'video' ? 'Download Other Videos' : 'Download Other Audios'}
                             </Button>
                           </div>
                         )}
@@ -402,35 +384,35 @@ export default function Home() {
             </Card>
 
             {/* Features Grid */}
-            <div id="features" className="grid md:grid-cols-3 gap-6 mb-20">
-              <Card className="card-gradient rounded-xl p-6 text-center animate-slide-up border-0">
+            <div id="features" className="grid md:grid-cols-3 gap-6 mb-16">
+              <Card className="bg-white shadow-md rounded-xl p-6 text-center animate-slide-up border border-gray-200">
                 <CardContent className="p-0">
-                  <Zap className="text-accent-orange text-4xl mb-4 mx-auto" />
-                  <h3 className="text-xl font-semibold mb-2 text-cream">{t('lightningFast')}</h3>
-                  <p className="text-cream-dark">{t('lightningFastDesc')}</p>
+                  <Zap className="text-blue-600 text-4xl mb-4 mx-auto" />
+                  <h3 className="text-xl font-semibold mb-2 text-gray-800">{t('lightningFast')}</h3>
+                  <p className="text-gray-600">{t('lightningFastDesc')}</p>
                 </CardContent>
               </Card>
-              <Card className="card-gradient rounded-xl p-6 text-center animate-slide-up border-0">
+              <Card className="bg-white shadow-md rounded-xl p-6 text-center animate-slide-up border border-gray-200">
                 <CardContent className="p-0">
-                  <Shield className="text-accent-orange text-4xl mb-4 mx-auto" />
-                  <h3 className="text-xl font-semibold mb-2 text-cream">{t('noWatermarks')}</h3>
-                  <p className="text-cream-dark">{t('noWatermarksDesc')}</p>
+                  <Shield className="text-green-600 text-4xl mb-4 mx-auto" />
+                  <h3 className="text-xl font-semibold mb-2 text-gray-800">{t('noWatermarks')}</h3>
+                  <p className="text-gray-600">{t('noWatermarksDesc')}</p>
                 </CardContent>
               </Card>
-              <Card className="card-gradient rounded-xl p-6 text-center animate-slide-up border-0">
+              <Card className="bg-white shadow-md rounded-xl p-6 text-center animate-slide-up border border-gray-200">
                 <CardContent className="p-0">
-                  <Smartphone className="text-accent-orange text-4xl mb-4 mx-auto" />
-                  <h3 className="text-xl font-semibold mb-2 text-cream">{t('allDevices')}</h3>
-                  <p className="text-cream-dark">{t('allDevicesDesc')}</p>
+                  <Smartphone className="text-purple-600 text-4xl mb-4 mx-auto" />
+                  <h3 className="text-xl font-semibold mb-2 text-gray-800">{t('allDevices')}</h3>
+                  <p className="text-gray-600">{t('allDevicesDesc')}</p>
                 </CardContent>
               </Card>
             </div>
 
             {/* App Download */}
-            <Card className="card-gradient rounded-xl p-8 mb-20 border-0">
+            <Card className="bg-white shadow-md rounded-xl p-8 mb-16 border border-gray-200">
               <CardContent className="p-0">
-                <h3 className="text-2xl font-bold mb-4 text-cream">{t('mobileAppTitle')}</h3>
-                <p className="text-cream-dark mb-6">{t('mobileAppDesc')}</p>
+                <h3 className="text-2xl font-bold mb-4 text-gray-800">{t('mobileAppTitle')}</h3>
+                <p className="text-gray-600 mb-6">{t('mobileAppDesc')}</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button 
                     variant="outline"
@@ -461,28 +443,28 @@ export default function Home() {
         </section>
 
         {/* SEO Content Section */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gradient">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
                 {t('seoTitle')}
               </h2>
-              <p className="text-xl text-cream-dark max-w-4xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-4xl mx-auto">
                 {t('seoSubtitle')}
               </p>
             </div>
 
             {/* Why Choose Us */}
             <div className="mb-16">
-              <h3 className="text-3xl font-bold text-center mb-12 text-cream">
+              <h3 className="text-3xl font-bold text-center mb-12 text-gray-800">
                 {t('whyChooseUs')}
               </h3>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <Card className="card-gradient rounded-xl p-6 border-0">
+                <Card className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
                   <CardContent className="p-0">
-                    <Download className="text-accent-orange text-3xl mb-4" />
-                    <h4 className="text-lg font-semibold mb-3 text-cream">{t('unlimitedDownloads')}</h4>
-                    <p className="text-cream-dark text-sm">{t('unlimitedDownloadsDesc')}</p>
+                    <Download className="text-blue-600 text-3xl mb-4" />
+                    <h4 className="text-lg font-semibold mb-3 text-gray-800">{t('unlimitedDownloads')}</h4>
+                    <p className="text-gray-600 text-sm">{t('unlimitedDownloadsDesc')}</p>
                   </CardContent>
                 </Card>
                 
@@ -530,10 +512,10 @@ export default function Home() {
 
             {/* How It Works */}
             <div className="mb-16">
-              <h3 className="text-3xl font-bold text-center mb-6 text-cream">
+              <h3 className="text-3xl font-bold text-center mb-6 text-gray-800">
                 {t('howItWorks')}
               </h3>
-              <p className="text-center text-cream-dark mb-12 max-w-3xl mx-auto">
+              <p className="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
                 {t('howItWorksDesc')}
               </p>
               <div className="grid md:grid-cols-3 gap-8">
@@ -541,52 +523,52 @@ export default function Home() {
                   <div className="bg-gradient-to-r from-accent-orange to-yellow-500 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                     <span className="text-white font-bold text-lg">1</span>
                   </div>
-                  <h4 className="text-lg font-semibold mb-3 text-cream">{t('step1Title')}</h4>
-                  <p className="text-cream-dark">{t('step1Desc')}</p>
+                  <h4 className="text-lg font-semibold mb-3 text-gray-800">{t('step1Title')}</h4>
+                  <p className="text-gray-600">{t('step1Desc')}</p>
                 </div>
                 
                 <div className="text-center">
                   <div className="bg-gradient-to-r from-accent-orange to-yellow-500 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                     <span className="text-white font-bold text-lg">2</span>
                   </div>
-                  <h4 className="text-lg font-semibold mb-3 text-cream">{t('step2Title')}</h4>
-                  <p className="text-cream-dark">{t('step2Desc')}</p>
+                  <h4 className="text-lg font-semibold mb-3 text-gray-800">{t('step2Title')}</h4>
+                  <p className="text-gray-600">{t('step2Desc')}</p>
                 </div>
                 
                 <div className="text-center">
                   <div className="bg-gradient-to-r from-accent-orange to-yellow-500 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                     <span className="text-white font-bold text-lg">3</span>
                   </div>
-                  <h4 className="text-lg font-semibold mb-3 text-cream">{t('step3Title')}</h4>
-                  <p className="text-cream-dark">{t('step3Desc')}</p>
+                  <h4 className="text-lg font-semibold mb-3 text-gray-800">{t('step3Title')}</h4>
+                  <p className="text-gray-600">{t('step3Desc')}</p>
                 </div>
               </div>
             </div>
 
             {/* Advanced Features */}
             <div className="text-center">
-              <h3 className="text-2xl font-bold mb-8 text-cream">
+              <h3 className="text-2xl font-bold mb-8 text-gray-800">
                 {t('advancedFeatures')}
               </h3>
               <div className="grid md:grid-cols-3 gap-6">
-                <Card className="card-gradient rounded-xl p-6 border-0">
+                <Card className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
                   <CardContent className="p-0 text-center">
-                    <h4 className="text-lg font-semibold mb-2 text-cream">{t('batchDownload')}</h4>
-                    <p className="text-cream-dark text-sm">{t('batchDownloadDesc')}</p>
+                    <h4 className="text-lg font-semibold mb-2 text-gray-800">{t('batchDownload')}</h4>
+                    <p className="text-gray-600 text-sm">{t('batchDownloadDesc')}</p>
                   </CardContent>
                 </Card>
                 
-                <Card className="card-gradient rounded-xl p-6 border-0">
+                <Card className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
                   <CardContent className="p-0 text-center">
-                    <h4 className="text-lg font-semibold mb-2 text-cream">{t('audioExtraction')}</h4>
-                    <p className="text-cream-dark text-sm">{t('audioExtractionDesc')}</p>
+                    <h4 className="text-lg font-semibold mb-2 text-gray-800">{t('audioExtraction')}</h4>
+                    <p className="text-gray-600 text-sm">{t('audioExtractionDesc')}</p>
                   </CardContent>
                 </Card>
                 
-                <Card className="card-gradient rounded-xl p-6 border-0">
+                <Card className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
                   <CardContent className="p-0 text-center">
-                    <h4 className="text-lg font-semibold mb-2 text-cream">{t('thumbnailDownload')}</h4>
-                    <p className="text-cream-dark text-sm">{t('thumbnailDownloadDesc')}</p>
+                    <h4 className="text-lg font-semibold mb-2 text-gray-800">{t('thumbnailDownload')}</h4>
+                    <p className="text-gray-600 text-sm">{t('thumbnailDownloadDesc')}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -596,9 +578,9 @@ export default function Home() {
       </main>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-dark-secondary">
+      <section id="faq" className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-100">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-12 text-cream">{t('faqTitle')}</h2>
+          <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">{t('faqTitle')}</h2>
           
           <div className="space-y-4">
             <FAQItem
@@ -630,50 +612,50 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-dark-primary">
+      <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-black">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <Video className="text-accent-orange text-xl" />
-                <span className="text-xl font-bold text-cream">{t('brand')}</span>
+                <Video className="text-white text-xl" />
+                <span className="text-xl font-bold text-white">{t('brand')}</span>
               </div>
-              <p className="text-cream-dark">{t('footerDesc')}</p>
+              <p className="text-gray-300">{t('footerDesc')}</p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4 text-cream">{t('company')}</h4>
-              <ul className="space-y-2 text-cream-dark">
-                <li><a href="/about" className="hover:text-accent-orange transition-colors duration-300">{t('aboutUs')}</a></li>
-                <li><a href="/contact" className="hover:text-accent-orange transition-colors duration-300">{t('contact')}</a></li>
-                <li><a href="/privacy-policy" className="hover:text-accent-orange transition-colors duration-300">{t('privacyPolicy')}</a></li>
-                <li><a href="/terms-of-service" className="hover:text-accent-orange transition-colors duration-300">{t('termsOfService')}</a></li>
+              <h4 className="font-semibold mb-4 text-white">{t('company')}</h4>
+              <ul className="space-y-2 text-gray-300">
+                <li><a href="/about" className="hover:text-blue-400 transition-colors duration-300">{t('aboutUs')}</a></li>
+                <li><a href="/contact" className="hover:text-blue-400 transition-colors duration-300">{t('contact')}</a></li>
+                <li><a href="/privacy-policy" className="hover:text-blue-400 transition-colors duration-300">{t('privacyPolicy')}</a></li>
+                <li><a href="/terms-of-service" className="hover:text-blue-400 transition-colors duration-300">{t('termsOfService')}</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4 text-cream">{t('tools')}</h4>
-              <ul className="space-y-2 text-cream-dark">
-                <li><a href="/" className="hover:text-accent-orange transition-colors duration-300">TikTok Video Downloader</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Instagram Downloader</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">YouTube Downloader</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Twitter Video Downloader</a></li>
-                <li><a href="#" className="hover:text-accent-orange transition-colors duration-300">Snapchat Downloader</a></li>
+              <h4 className="font-semibold mb-4 text-white">{t('tools')}</h4>
+              <ul className="space-y-2 text-gray-300">
+                <li><a href="/" className="hover:text-blue-400 transition-colors duration-300">TikTok Video Downloader</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">Instagram Downloader</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">YouTube Downloader</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">Twitter Video Downloader</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition-colors duration-300">Snapchat Downloader</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4 text-cream">{t('legal')}</h4>
-              <ul className="space-y-2 text-cream-dark">
-                <li><a href="/faq" className="hover:text-accent-orange transition-colors duration-300">{t('faq')}</a></li>
-                <li><a href="/terms-of-service" className="hover:text-accent-orange transition-colors duration-300">{t('termsOfService')}</a></li>
-                <li><a href="/privacy-policy" className="hover:text-accent-orange transition-colors duration-300">{t('privacyPolicy')}</a></li>
+              <h4 className="font-semibold mb-4 text-white">{t('legal')}</h4>
+              <ul className="space-y-2 text-gray-300">
+                <li><a href="/faq" className="hover:text-blue-400 transition-colors duration-300">{t('faq')}</a></li>
+                <li><a href="/terms-of-service" className="hover:text-blue-400 transition-colors duration-300">{t('termsOfService')}</a></li>
+                <li><a href="/privacy-policy" className="hover:text-blue-400 transition-colors duration-300">{t('privacyPolicy')}</a></li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-coffee mt-12 pt-8 text-center text-cream-dark">
-            <p>&copy; 2024 {t('brand')}. All rights reserved. | Not affiliated with TikTok or ByteDance Ltd.</p>
+          <div className="border-t border-gray-700 mt-12 pt-8 text-center text-gray-300">
+            <p>&copy; 2025 {t('brand')}. All rights reserved. | Not affiliated with TikTok or ByteDance Ltd.</p>
           </div>
         </div>
       </footer>

@@ -43,9 +43,9 @@ export class TikTokAPI {
         thumbnail: data?.cover || data?.origin_cover || data?.dynamic_cover || data?.images?.[0],
         duration: data?.duration,
         downloads: {
-          hd: data?.video?.[0]?.url || data?.hd || data?.play,
-          sd: data?.video?.[1]?.url || data?.play || data?.wmplay,
-          noWatermark: data?.video?.[0]?.url || data?.hdplay || data?.play,
+          hd: data?.videoHD || data?.hd || data?.play,
+          sd: data?.videoSD || data?.play || data?.wmplay,
+          noWatermark: data?.videoHD || data?.hdplay || data?.play,
           audio: data?.music?.[0]?.url || data?.music || data?.music_info?.play
         },
         originalUrl: url
