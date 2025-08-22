@@ -265,19 +265,26 @@ export class TikTokAPI {
     }
   }
 
-  // Proper streaming method for fast downloads
+  // Proper streaming method for fast downloads using Node.js streams
   static async streamFile(downloadUrl: string, res: any): Promise<void> {
     try {
       console.log(`[TikTok API] Streaming file from: ${downloadUrl}`);
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
       const response = await fetch(downloadUrl, {
+        redirect: "follow",
         headers: {
           "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          Referer: "https://www.tiktok.com/",
-          Accept: "*/*",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0 Safari/537.36",
+          "Referer": "https://www.tiktok.com/",
+          "Accept": "video/mp4,application/octet-stream,*/*",
         },
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(
@@ -289,41 +296,21 @@ export class TikTokAPI {
       if (response.headers.get('content-length')) {
         res.setHeader('Content-Length', response.headers.get('content-length'));
       }
-
-      // Use the proper way to stream in Node.js with fetch
-      if (response.body) {
-        // Handle the Web ReadableStream properly with type assertion
-        const reader = (response.body as any).getReader();
-        
-        const pump = async (): Promise<void> => {
-          try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              
-              // Write chunks as they come in
-              if (!res.write(Buffer.from(value))) {
-                // If write buffer is full, wait for drain
-                await new Promise(resolve => res.once('drain', resolve));
-              }
-            }
-            res.end();
-          } catch (error) {
-            console.error('[TikTok API] Streaming error:', error);
-            if (!res.headersSent) {
-              res.status(500).end();
-            }
-          } finally {
-            reader.releaseLock();
-          }
-        };
-
-        await pump();
-      } else {
-        // Fallback: read as buffer and send
-        const buffer = Buffer.from(await response.arrayBuffer());
-        res.end(buffer);
+      if (response.headers.get('content-type')) {
+        res.setHeader('Content-Type', response.headers.get('content-type'));
       }
+
+      // Use Node.js stream piping (the correct way for node-fetch)
+      if (!response.body) {
+        throw new Error("Response body is empty");
+      }
+
+      await new Promise((resolve, reject) => {
+        response.body!.pipe(res);
+        response.body!.on("error", reject);
+        res.on("finish", resolve);
+        res.on("error", reject);
+      });
 
       console.log(`[TikTok API] File streaming completed`);
     } catch (error: any) {
