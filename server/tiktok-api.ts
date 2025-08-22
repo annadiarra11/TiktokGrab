@@ -43,8 +43,20 @@ export class TikTokAPI {
         return avatarIndicators.some(indicator => url.toLowerCase().includes(indicator));
       };
 
-      // Get the best video thumbnail (prioritize video covers over creator avatars)
+      // Get the best video thumbnail - use whatever is available
       const getThumbnail = () => {
+        // Add debug logging to see what's actually in the response
+        console.log('[TikTok API] Available thumbnail fields:', {
+          static_cover: data?.static_cover,
+          ai_dynamic_cover: data?.ai_dynamic_cover,
+          video_thumbnail: data?.video_thumbnail,
+          cover: data?.cover,
+          origin_cover: data?.origin_cover,
+          dynamic_cover: data?.dynamic_cover,
+          images: data?.images,
+          author_avatar: data?.author?.avatar
+        });
+
         const thumbnailCandidates = [
           data?.static_cover,
           data?.ai_dynamic_cover,
@@ -52,25 +64,20 @@ export class TikTokAPI {
           data?.cover,
           data?.origin_cover,
           data?.dynamic_cover,
-          data?.images?.[0]
+          data?.images?.[0],
+          data?.author?.avatar  // Include avatar as a valid option
         ];
         
-        // First, try to find a video cover (not avatar)
-        for (const candidate of thumbnailCandidates) {
-          if (candidate && !isCreatorAvatar(candidate)) {
-            return candidate;
-          }
-        }
-        
-        // If no video cover found, use any available thumbnail (including potential avatars)
+        // Use the first available thumbnail (don't filter out avatars)
         for (const candidate of thumbnailCandidates) {
           if (candidate) {
+            console.log('[TikTok API] Using thumbnail:', candidate);
             return candidate;
           }
         }
         
-        // Last resort: use author avatar if available
-        return data?.author?.avatar;
+        console.log('[TikTok API] No thumbnail found');
+        return undefined;
       };
 
       // Extract video information with proper null checks
@@ -147,32 +154,25 @@ export class TikTokAPI {
         return avatarIndicators.some(indicator => url.toLowerCase().includes(indicator));
       };
 
-      // Get the best video thumbnail (prioritize video covers over creator avatars)
+      // Get the best video thumbnail - use whatever is available
       const getThumbnail = () => {
         const thumbnailCandidates = [
           data.data.static_cover,
           data.data.ai_dynamic_cover,
           data.data.cover,
           data.data.origin_cover,
-          data.data.dynamic_cover
+          data.data.dynamic_cover,
+          data.data.author?.avatar  // Include avatar as a valid option
         ];
         
-        // First, try to find a video cover (not avatar)
-        for (const candidate of thumbnailCandidates) {
-          if (candidate && !isCreatorAvatar(candidate)) {
-            return candidate;
-          }
-        }
-        
-        // If no video cover found, use any available thumbnail (including potential avatars)
+        // Use the first available thumbnail
         for (const candidate of thumbnailCandidates) {
           if (candidate) {
             return candidate;
           }
         }
         
-        // Last resort: use author avatar if available
-        return data.data.author?.avatar;
+        return undefined;
       };
 
       return {
