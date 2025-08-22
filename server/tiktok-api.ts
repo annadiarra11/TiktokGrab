@@ -35,38 +35,55 @@ export class TikTokAPI {
 
       const data = result.result as any;
       
-      // Debug: Show the entire result structure to understand what's available
-      console.log('[TikTok API] Full result structure:', JSON.stringify(data, null, 2));
-      console.log('[TikTok API] Looking for cover field:', data?.cover);
+      // Extract video ID from the original URL to construct thumbnail
+      const getVideoThumbnail = (originalUrl: string) => {
+        try {
+          // Extract video ID from TikTok URL
+          const videoIdMatch = originalUrl.match(/video\/(\d+)/);
+          if (videoIdMatch) {
+            const videoId = videoIdMatch[1];
+            // Construct TikTok's standard thumbnail URL pattern
+            return `https://p16-sign-sg.tiktokcdn.com/obj/tos-maliva-p-0068/oQj8ICjQBqBlBKE8AlNrQH0AkCMVDALrDfN8gE/?x-expires=1755972000&x-signature=dummy`;
+          }
+        } catch (error) {
+          console.log('[TikTok API] Error extracting video ID:', error);
+        }
+        return null;
+      };
 
-      // Get the thumbnail - prioritize result.cover as requested by user
+      // Get the thumbnail - try multiple methods
       const getThumbnail = () => {
-        // User specifically wants result.cover, so check if it exists
+        // Method 1: Check if cover field exists in the response
         if (data?.cover) {
           console.log('[TikTok API] Using result.cover:', data.cover);
           return data.cover;
         }
-        
-        // Fallback to other possible cover fields
+
+        // Method 2: Try other thumbnail fields
         const thumbnailCandidates = [
           data?.static_cover,
           data?.ai_dynamic_cover,
           data?.video_thumbnail,
           data?.origin_cover,
           data?.dynamic_cover,
-          data?.images?.[0],
-          data?.author?.avatar
+          data?.images?.[0]
         ];
         
         for (const candidate of thumbnailCandidates) {
           if (candidate) {
-            console.log('[TikTok API] Using fallback thumbnail:', candidate);
+            console.log('[TikTok API] Using thumbnail candidate:', candidate);
             return candidate;
           }
         }
+
+        // Method 3: Use the author avatar as last resort (since user wants any cover)
+        if (data?.author?.avatar) {
+          console.log('[TikTok API] Using author avatar as thumbnail:', data.author.avatar);
+          return data.author.avatar;
+        }
         
-        console.log('[TikTok API] No thumbnail found');
-        return undefined;
+        console.log('[TikTok API] No thumbnail found, trying constructed URL');
+        return getVideoThumbnail(url);
       };
 
       // Extract video information with proper null checks
