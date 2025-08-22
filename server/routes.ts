@@ -224,13 +224,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return;
         }
         
-        // Set appropriate headers for audio
-        const isAudioUrl = extractedData.downloads.audio === audioUrl;
-        const contentType = isAudioUrl ? 'audio/mpeg' : 'video/mp4';
-        const extension = isAudioUrl ? 'mp3' : 'mp4';
-        
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-audio'}.${extension}"`);
+        // Set appropriate headers for audio (always MP3 now)
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-audio'}.mp3"`);
         res.setHeader('Cache-Control', 'no-cache');
         
         // Use yt-dlp streaming directly for audio extraction
