@@ -77,10 +77,13 @@ export class TwitterAPI {
       res.setHeader('Cache-Control', 'no-cache');
 
       // Use spawn instead of execFile for better streaming control
+      // Priority: progressive > adaptive, avoid HLS segments, ensure keyframes
       const ytdlpProcess = spawn('yt-dlp', [
-        '--format', 'best[ext=mp4]/mp4/best',
+        '--format', 'best[protocol^=http][ext=mp4]/best[ext=mp4]/mp4/best',
         '--output', '-',
         '--no-warnings',
+        '--fixup', 'detect_or_warn',
+        '--force-keyframes-at-cuts',
         url
       ], {
         stdio: ['pipe', 'pipe', 'pipe']
@@ -203,9 +206,10 @@ export class TwitterAPI {
 
       // Start yt-dlp to download video
       const ytdlpProcess = spawn('yt-dlp', [
-        '--format', 'best[ext=mp4]/best',
+        '--format', 'best[protocol^=http][ext=mp4]/best[ext=mp4]/mp4/best',
         '--output', '-',
         '--no-warnings',
+        '--fixup', 'detect_or_warn',
         url
       ], {
         stdio: ['pipe', 'pipe', 'pipe']
@@ -217,6 +221,7 @@ export class TwitterAPI {
         '-vn',                    // No video
         '-acodec', 'mp3',         // Audio codec MP3
         '-ab', '192k',            // Audio bitrate
+        '-avoid_negative_ts', 'make_zero', // Fix timing issues
         '-f', 'mp3',              // Output format MP3
         'pipe:1'                  // Output to stdout
       ], {
