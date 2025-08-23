@@ -33,8 +33,8 @@ export const insertDownloadRequestSchema = createInsertSchema(downloadRequests).
 
 export const downloadRequestSchema = z.object({
   url: z.string().url("Please enter a valid URL").refine(
-    (url) => url.includes("tiktok.com"),
-    "URL must be from TikTok"
+    (url) => url.includes("twitter.com") || url.includes("x.com"),
+    "URL must be from Twitter/X"
   ),
 });
 

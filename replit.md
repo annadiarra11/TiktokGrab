@@ -1,8 +1,8 @@
-# TikTok Video Downloader
+# Twitter/X Video Downloader
 
 ## Overview
 
-This is a full-stack web application for downloading TikTok videos without watermarks. The application provides a clean, user-friendly interface where users can paste TikTok URLs and download videos in different quality options (HD, SD, or audio only). The system processes download requests asynchronously and provides progress feedback to users.
+This is a full-stack web application for downloading Twitter/X videos. The application provides a clean, user-friendly interface where users can paste Twitter/X URLs and download videos in different quality options (HD, SD, or audio only). The system processes download requests asynchronously and provides progress feedback to users.
 
 ## User Preferences
 
@@ -70,7 +70,7 @@ Preferred communication style: Simple, everyday language.
 - **@hookform/resolvers**: Integration between React Hook Form and Zod
 
 ### External Services Integration
-- **TikTok API Integration**: Prepared for video metadata extraction and download processing
+- **Twitter/X API Integration**: Prepared for video metadata extraction and download processing
 - **File Processing**: Ready for video processing and watermark removal capabilities
 - **Cloud Storage**: Architecture supports external file storage integration
 
@@ -80,6 +80,6 @@ Preferred communication style: Simple, everyday language.
 - **SEO-Optimized Content Section**: Implemented keyword-rich content between mobile app and FAQ sections with professional layout including "Why Choose Us", "How It Works", and "Advanced Features" sections
 - **Multi-language SEO Support**: All SEO content is fully translatable across 9 supported languages with fallback system to English
 - **Technical SEO Features**: Added canonical URLs, proper heading structure, semantic HTML, and mobile-optimized responsive design
-- **Search Engine Targeting**: Focused on high-value keywords like "tiktok downloader", "no watermark", "free tiktok video downloader", "tiktok to mp4" for better ranking potential
+- **Search Engine Targeting**: Focused on high-value keywords like "twitter downloader", "x video downloader", "free twitter video downloader", "twitter to mp4" for better ranking potential
 
 The application is designed with scalability in mind, using modern development practices and a clean separation of concerns between frontend, backend, and data layers. The SEO implementation showcases professional web development capabilities and demonstrates Replit's power for creating search engine optimized applications.

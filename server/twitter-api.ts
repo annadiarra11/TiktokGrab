@@ -5,7 +5,7 @@ import path from "path";
 
 const execFileAsync = promisify(execFile);
 
-export interface TikTokVideoResult {
+export interface TwitterVideoResult {
   success: boolean;
   title?: string;
   author?: string;
@@ -20,13 +20,13 @@ export interface TikTokVideoResult {
   originalUrl: string;
 }
 
-export class TikTokAPI {
+export class TwitterAPI {
   /**
    * Extract video info using yt-dlp only
    */
-  static async extractVideoInfo(url: string): Promise<TikTokVideoResult> {
+  static async extractVideoInfo(url: string): Promise<TwitterVideoResult> {
     try {
-      console.log(`[TikTok API] Extracting with yt-dlp: ${url}`);
+      console.log(`[Twitter API] Extracting with yt-dlp: ${url}`);
 
       const { stdout: infoOutput } = await execFileAsync('yt-dlp', [
         '--dump-json',
@@ -36,7 +36,7 @@ export class TikTokAPI {
       ]);
 
       const videoInfo = JSON.parse(infoOutput.trim());
-      console.log(`[TikTok API] yt-dlp extracted info:`, {
+      console.log(`[Twitter API] yt-dlp extracted info:`, {
         title: videoInfo.title,
         uploader: videoInfo.uploader,
         thumbnail: videoInfo.thumbnail,
@@ -45,7 +45,7 @@ export class TikTokAPI {
 
       return {
         success: true,
-        title: videoInfo.title || "TikTok Video",
+        title: videoInfo.title || "Twitter Video",
         author: `@${videoInfo.uploader || videoInfo.channel || "unknown"}`,
         thumbnail: videoInfo.thumbnail,
         duration: videoInfo.duration,
@@ -59,7 +59,7 @@ export class TikTokAPI {
       };
 
     } catch (error: any) {
-      console.error(`[TikTok API] yt-dlp extraction failed:`, error);
+      console.error(`[Twitter API] yt-dlp extraction failed:`, error);
       throw new Error(`yt-dlp extraction failed: ${error?.message || "Unknown error"}`);
     }
   }
@@ -69,11 +69,11 @@ export class TikTokAPI {
    */
   static async streamVideoWithYtdlp(url: string, res: any): Promise<void> {
     return new Promise((resolve, reject) => {
-      console.log(`[TikTok API] Streaming video with yt-dlp: ${url}`);
+      console.log(`[Twitter API] Streaming video with yt-dlp: ${url}`);
 
       // Set headers first
       res.setHeader('Content-Type', 'video/mp4');
-      res.setHeader('Content-Disposition', 'attachment; filename="tiktok-video.mp4"');
+      res.setHeader('Content-Disposition', 'attachment; filename="twitter-video.mp4"');
       res.setHeader('Cache-Control', 'no-cache');
 
       // Use spawn instead of execFile for better streaming control
@@ -110,7 +110,7 @@ export class TikTokAPI {
 
       // Handle stdout end
       ytdlpProcess.stdout.on('end', () => {
-        console.log('[TikTok API] yt-dlp stdout ended');
+        console.log('[Twitter API] yt-dlp stdout ended');
         if (!resolved && dataReceived) {
           resolved = true;
           res.end();
@@ -120,7 +120,7 @@ export class TikTokAPI {
 
       // Handle process exit
       ytdlpProcess.on('exit', (code, signal) => {
-        console.log(`[TikTok API] yt-dlp process exited with code: ${code}, signal: ${signal}`);
+        console.log(`[Twitter API] yt-dlp process exited with code: ${code}, signal: ${signal}`);
         if (!resolved) {
           if (code === 0 && dataReceived) {
             resolved = true;
@@ -135,7 +135,7 @@ export class TikTokAPI {
 
       // Handle process errors
       ytdlpProcess.on('error', (error) => {
-        console.error('[TikTok API] yt-dlp process error:', error);
+        console.error('[Twitter API] yt-dlp process error:', error);
         cleanup();
         if (!resolved) {
           resolved = true;
@@ -146,7 +146,7 @@ export class TikTokAPI {
       // Handle stderr for debugging
       ytdlpProcess.stderr.on('data', (data) => {
         const errorMsg = data.toString();
-        console.error('[TikTok API] yt-dlp stderr:', errorMsg);
+        console.error('[Twitter API] yt-dlp stderr:', errorMsg);
         
         // Check for specific errors that indicate failure
         if (errorMsg.includes('ERROR:') || errorMsg.includes('Unable to extract')) {
@@ -160,7 +160,7 @@ export class TikTokAPI {
 
       // Handle client disconnect
       res.on('close', () => {
-        console.log('[TikTok API] Client disconnected');
+        console.log('[Twitter API] Client disconnected');
         cleanup();
         if (!resolved) {
           resolved = true;
@@ -169,7 +169,7 @@ export class TikTokAPI {
       });
 
       res.on('error', (error: any) => {
-        console.error('[TikTok API] Response error:', error);
+        console.error('[Twitter API] Response error:', error);
         cleanup();
         if (!resolved) {
           resolved = true;
@@ -180,7 +180,7 @@ export class TikTokAPI {
       // Timeout after 3 minutes
       setTimeout(() => {
         if (!resolved) {
-          console.log('[TikTok API] yt-dlp streaming timeout');
+          console.log('[Twitter API] yt-dlp streaming timeout');
           cleanup();
           resolved = true;
           reject(new Error('Streaming timeout after 3 minutes'));
@@ -194,11 +194,11 @@ export class TikTokAPI {
    */
   static async streamAudioWithYtdlp(url: string, res: any): Promise<void> {
     return new Promise((resolve, reject) => {
-      console.log(`[TikTok API] Streaming audio with yt-dlp + ffmpeg: ${url}`);
+      console.log(`[Twitter API] Streaming audio with yt-dlp + ffmpeg: ${url}`);
 
       // Set headers first
       res.setHeader('Content-Type', 'audio/mpeg');
-      res.setHeader('Content-Disposition', 'attachment; filename="tiktok-audio.mp3"');
+      res.setHeader('Content-Disposition', 'attachment; filename="twitter-audio.mp3"');
       res.setHeader('Cache-Control', 'no-cache');
 
       // Start yt-dlp to download video
@@ -251,7 +251,7 @@ export class TikTokAPI {
 
       // Handle ffmpeg stdout end
       ffmpegProcess.stdout.on('end', () => {
-        console.log('[TikTok API] ffmpeg audio stdout ended');
+        console.log('[Twitter API] ffmpeg audio stdout ended');
         if (!resolved && dataReceived) {
           resolved = true;
           res.end();
@@ -261,7 +261,7 @@ export class TikTokAPI {
 
       // Handle ffmpeg process exit
       ffmpegProcess.on('exit', (code, signal) => {
-        console.log(`[TikTok API] ffmpeg audio process exited with code: ${code}, signal: ${signal}`);
+        console.log(`[Twitter API] ffmpeg audio process exited with code: ${code}, signal: ${signal}`);
         if (!resolved) {
           if (code === 0 && dataReceived) {
             resolved = true;
@@ -276,7 +276,7 @@ export class TikTokAPI {
 
       // Handle yt-dlp process exit
       ytdlpProcess.on('exit', (code, signal) => {
-        console.log(`[TikTok API] yt-dlp video process exited with code: ${code}, signal: ${signal}`);
+        console.log(`[Twitter API] yt-dlp video process exited with code: ${code}, signal: ${signal}`);
         // Close ffmpeg input when yt-dlp is done
         try {
           ffmpegProcess.stdin.end();
@@ -287,7 +287,7 @@ export class TikTokAPI {
 
       // Handle process errors
       ytdlpProcess.on('error', (error) => {
-        console.error('[TikTok API] yt-dlp process error:', error);
+        console.error('[Twitter API] yt-dlp process error:', error);
         cleanup();
         if (!resolved) {
           resolved = true;
@@ -296,7 +296,7 @@ export class TikTokAPI {
       });
 
       ffmpegProcess.on('error', (error) => {
-        console.error('[TikTok API] ffmpeg process error:', error);
+        console.error('[Twitter API] ffmpeg process error:', error);
         cleanup();
         if (!resolved) {
           resolved = true;
@@ -307,7 +307,7 @@ export class TikTokAPI {
       // Handle stderr for debugging
       ytdlpProcess.stderr.on('data', (data) => {
         const errorMsg = data.toString();
-        console.error('[TikTok API] yt-dlp stderr:', errorMsg);
+        console.error('[Twitter API] yt-dlp stderr:', errorMsg);
         
         if (errorMsg.includes('ERROR:') || errorMsg.includes('Unable to extract')) {
           cleanup();
@@ -320,12 +320,12 @@ export class TikTokAPI {
 
       ffmpegProcess.stderr.on('data', (data) => {
         const errorMsg = data.toString();
-        console.error('[TikTok API] ffmpeg stderr:', errorMsg);
+        console.error('[Twitter API] ffmpeg stderr:', errorMsg);
       });
 
       // Handle client disconnect
       res.on('close', () => {
-        console.log('[TikTok API] Audio client disconnected');
+        console.log('[Twitter API] Audio client disconnected');
         cleanup();
         if (!resolved) {
           resolved = true;
@@ -334,7 +334,7 @@ export class TikTokAPI {
       });
 
       res.on('error', (error: any) => {
-        console.error('[TikTok API] Audio response error:', error);
+        console.error('[Twitter API] Audio response error:', error);
         cleanup();
         if (!resolved) {
           resolved = true;
@@ -345,7 +345,7 @@ export class TikTokAPI {
       // Timeout after 3 minutes
       setTimeout(() => {
         if (!resolved) {
-          console.log('[TikTok API] Audio streaming timeout');
+          console.log('[Twitter API] Audio streaming timeout');
           cleanup();
           resolved = true;
           reject(new Error('Audio streaming timeout after 3 minutes'));
@@ -357,7 +357,7 @@ export class TikTokAPI {
   /**
    * Get best quality URL (placeholder for yt-dlp)
    */
-  static getBestQualityUrl(videoInfo: TikTokVideoResult, quality: 'hd' | 'sd' | 'noWatermark' = 'hd'): string {
+  static getBestQualityUrl(videoInfo: TwitterVideoResult, quality: 'hd' | 'sd' | 'noWatermark' = 'hd'): string {
     return 'yt-dlp-video'; // Always use yt-dlp streaming
   }
 }

@@ -36,8 +36,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const createDownloadSchema = (t: any) => z.object({
   url: z.string().url(t('invalidUrl')).refine(
-    (url) => url.includes("tiktok.com"),
-    t('urlMustBeTiktok')
+    (url) => url.includes("twitter.com") || url.includes("x.com"),
+    t('urlMustBeTwitter')
   ),
 });
 
@@ -74,8 +74,8 @@ export default function Home() {
       if (data.success) {
         setVideoData({
           ...data,
-          thumbnail: data.thumbnail || 'https://via.placeholder.com/300x200?text=TikTok+Video',
-          title: data.title || 'TikTok Video'
+          thumbnail: data.thumbnail || 'https://via.placeholder.com/300x200?text=Twitter+Video',
+          title: data.title || 'Twitter Video'
         });
         setShowDownloadOptions(true);
         // Immediately show the final download options (skip intermediate screen)
@@ -146,7 +146,7 @@ export default function Home() {
         // Create download link with actual file
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.download = `tiktok-${type}-${Date.now()}.${type === 'video' ? 'mp4' : 'mp3'}`;
+        link.download = `twitter-${type}-${Date.now()}.${type === 'video' ? 'mp4' : 'mp3'}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

@@ -3,10 +3,10 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { downloadRequestSchema } from "@shared/schema";
 import { z } from "zod";
-import { TikTokAPI } from './tiktok-api';
+import { TwitterAPI } from './twitter-api';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // TikTok video download endpoint
+  // Twitter video download endpoint
   app.post("/api/download", async (req, res) => {
     try {
       const { url } = downloadRequestSchema.parse(req.body);
@@ -22,7 +22,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       setTimeout(async () => {
         try {
           // Update with completed status
-          const fileName = `tiktok-video-${Date.now()}.mp4`;
+          const fileName = `twitter-video-${Date.now()}.mp4`;
           const downloadUrl = `/api/download/${downloadRequest.id}/file`;
           
           await storage.updateDownloadRequest(downloadRequest.id, {
@@ -39,9 +39,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }, 3000); // Simulate 3 second processing time
       
-      // Extract real TikTok video data using professional API
+      // Extract real Twitter video data using professional API
       try {
-        const videoData = await TikTokAPI.extractVideoInfo(url);
+        const videoData = await TwitterAPI.extractVideoInfo(url);
         
         // Store the extracted video data for later download
         await storage.updateDownloadRequest(downloadRequest.id, {
@@ -61,14 +61,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           thumbnail: videoData.thumbnail,
           title: videoData.title,
           author: videoData.author,
-          filename: `${videoData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-video'}.mp4`,
+          filename: `${videoData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'twitter-video'}.mp4`,
         });
       } catch (extractionError: any) {
-        console.error('TikTok extraction failed:', extractionError);
+        console.error('Twitter extraction failed:', extractionError);
         
         res.status(400).json({
           success: false,
-          message: "Failed to process TikTok video",
+          message: "Failed to process Twitter video",
           error: extractionError?.message || 'Unable to extract video data',
         });
       }
@@ -161,11 +161,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Set download headers
         res.setHeader('Content-Type', 'video/mp4');
-        res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-video'}.mp4"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'twitter-video'}.mp4"`);
         res.setHeader('Cache-Control', 'no-cache');
         
-        // Use yt-dlp streaming directly (most reliable for TikTok)
-        await TikTokAPI.streamVideoWithYtdlp(extractedData.originalUrl, res);
+        // Use yt-dlp streaming directly (most reliable for Twitter)
+        await TwitterAPI.streamVideoWithYtdlp(extractedData.originalUrl, res);
         
       } catch (downloadError: any) {
         console.error('Video download error:', downloadError);
@@ -226,11 +226,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Set appropriate headers for audio (always MP3 now)
         res.setHeader('Content-Type', 'audio/mpeg');
-        res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'tiktok-audio'}.mp3"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${extractedData.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'twitter-audio'}.mp3"`);
         res.setHeader('Cache-Control', 'no-cache');
         
         // Use yt-dlp streaming directly for audio extraction
-        await TikTokAPI.streamAudioWithYtdlp(extractedData.originalUrl, res);
+        await TwitterAPI.streamAudioWithYtdlp(extractedData.originalUrl, res);
         
       } catch (downloadError: any) {
         console.error('Audio download error:', downloadError);
